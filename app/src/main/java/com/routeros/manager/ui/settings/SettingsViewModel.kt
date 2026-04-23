@@ -21,7 +21,10 @@ data class SettingsUiState(
     val isConnected: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
-    val successMessage: String? = null
+    val successMessage: String? = null,
+    val availableInterfaces: List<String> = emptyList(),
+    val selectedInterfaces: Set<String> = emptySet(),
+    val isLoadingInterfaces: Boolean = false
 )
 
 @HiltViewModel
@@ -45,8 +48,12 @@ class SettingsViewModel @Inject constructor(
             username = securePreferences.username,
             password = securePreferences.password,
             displayMode = securePreferences.displayMode,
-            isConnected = securePreferences.isConnected
+            isConnected = securePreferences.isConnected,
+            selectedInterfaces = securePreferences.homeInterfaceNames
         )
+        if (securePreferences.isConnected) {
+            loadInterfaces()
+        }
     }
 
     fun updateHost(host: String) {
@@ -149,6 +156,7 @@ class SettingsViewModel @Inject constructor(
                         if (version.isNotBlank()) append(" · RouterOS $version")
                     }
                 )
+                loadInterfaces()
             } else {
                 securePreferences.isConnected = false
                 _uiState.value = _uiState.value.copy(
@@ -178,5 +186,47 @@ class SettingsViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(
             successMessage = "所有数据已清除"
         )
+    }
+
+    fun loadInterfaces() {
+        if (!securePreferences.hasCredentials()) return
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoadingInterfaces = true)
+            val result = repository.getInterfaces()
+            if (result.isSuccess) {
+                val names = result.getOrDefault(emptyList()).map { it.name }.sorted()
+                _uiState.value = _uiState.value.copy(
+                    availableInterfaces = names,
+                    isLoadingInterfaces = false
+                )
+            } else {
+                _uiState.value = _uiState.value.copy(
+                    isLoadingInterfaces = false,
+                    error = "加载接口列表失败"
+                )
+            }
+        }
+    }
+
+    fun toggleInterface(name: String) {
+        val current = _uiState.value.selectedInterfaces.toMutableSet()
+        if (current.contains(name)) {
+            current.remove(name)
+        } else {
+            current.add(name)
+        }
+        _uiState.value = _uiState.value.copy(selectedInterfaces = current)
+        securePreferences.homeInterfaceNames = current
+    }
+
+    fun selectAllInterfaces() {
+        val all = _uiState.value.availableInterfaces.toSet()
+        _uiState.value = _uiState.value.copy(selectedInterfaces = all)
+        securePreferences.homeInterfaceNames = all
+    }
+
+    fun clearInterfaceSelection() {
+        _uiState.value = _uiState.value.copy(selectedInterfaces = emptySet())
+        securePreferences.homeInterfaceNames = emptySet()
     }
 }

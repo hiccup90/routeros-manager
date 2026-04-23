@@ -32,6 +32,7 @@ class SecurePreferences @Inject constructor(
         private const val KEY_DISPLAY_MODE = "display_mode"
         private const val KEY_CONNECTED = "is_connected"
         private const val KEY_LAST_CONNECTED = "last_connected"
+        private const val KEY_HOME_INTERFACES = "home_interfaces"
     }
 
     var host: String
@@ -61,6 +62,10 @@ class SecurePreferences @Inject constructor(
     var lastConnected: Long
         get() = sharedPreferences.getLong(KEY_LAST_CONNECTED, 0L)
         set(value) = sharedPreferences.edit().putLong(KEY_LAST_CONNECTED, value).apply()
+
+    var homeInterfaceNames: Set<String>
+        get() = sharedPreferences.getStringSet(KEY_HOME_INTERFACES, emptySet()) ?: emptySet()
+        set(value) = sharedPreferences.edit().putStringSet(KEY_HOME_INTERFACES, value).apply()
 
     fun clearAll() {
         sharedPreferences.edit().clear().apply()

@@ -137,7 +137,8 @@ class HomeViewModel @Inject constructor(
 
             val interfaces = if (interfacesResult.isSuccess) {
                 val all = interfacesResult.getOrDefault(emptyList())
-                calculateInterfaceRates(all)
+                val filtered = filterHomeInterfaces(all)
+                calculateInterfaceRates(filtered)
             } else {
                 emptyList()
             }
@@ -165,6 +166,12 @@ class HomeViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    private fun filterHomeInterfaces(interfaces: List<InterfaceItem>): List<InterfaceItem> {
+        val selected = securePreferences.homeInterfaceNames
+        if (selected.isEmpty()) return interfaces
+        return interfaces.filter { it.name in selected }
     }
 
     private fun calculateInterfaceRates(interfaces: List<InterfaceItem>): List<InterfaceUiModel> {
