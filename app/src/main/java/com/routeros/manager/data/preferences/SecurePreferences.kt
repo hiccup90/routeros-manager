@@ -12,6 +12,10 @@ import javax.inject.Singleton
 class SecurePreferences @Inject constructor(
     @ApplicationContext context: Context
 ) {
+    init {
+        check(KEY_PASSWORD != LEGACY_KEY_PASSWORD) { "Password preference keys must be distinct" }
+    }
+
     private val masterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
         .build()
@@ -29,6 +33,7 @@ class SecurePreferences @Inject constructor(
         private const val KEY_PORT = "router_port"
         private const val KEY_USERNAME = "router_username"
         private const val KEY_PASSWORD = "router_password"
+        private const val LEGACY_KEY_PASSWORD = "***"
         private const val KEY_DISPLAY_MODE = "display_mode"
         private const val KEY_CONNECTED = "is_connected"
         private const val KEY_LAST_CONNECTED = "last_connected"
@@ -48,8 +53,27 @@ class SecurePreferences @Inject constructor(
         set(value) = sharedPreferences.edit().putString(KEY_USERNAME, value).apply()
 
     var password: String
-        get() = sharedPreferences.getString(KEY_PASSWORD, "") ?: ""
-        set(value) = sharedPreferences.edit().putString(KEY_PASSWORD, value).apply()
+        get() {
+            val currentValue = sharedPreferences.getString(KEY_PASSWORD, null)
+            if (currentValue != null) return currentValue
+
+            val legacyValue = sharedPreferences.getString(LEGACY_KEY_PASSWORD, null)
+            if (legacyValue != null) {
+                sharedPreferences.edit()
+                    .putString(KEY_PASSWORD, legacyValue)
+                    .remove(LEGACY_KEY_PASSWORD)
+                    .apply()
+                return legacyValue
+            }
+
+            return ""
+        }
+        set(value) {
+            sharedPreferences.edit()
+                .putString(KEY_PASSWORD, value)
+                .remove(LEGACY_KEY_PASSWORD)
+                .apply()
+        }
 
     var displayMode: String
         get() = sharedPreferences.getString(KEY_DISPLAY_MODE, "all") ?: "all"

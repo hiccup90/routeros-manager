@@ -195,8 +195,14 @@ class SettingsViewModel @Inject constructor(
             val result = repository.getInterfaces()
             if (result.isSuccess) {
                 val names = result.getOrDefault(emptyList()).map { it.name }.sorted()
+                val availableSet = names.toSet()
+                val cleanedSelection = _uiState.value.selectedInterfaces.intersect(availableSet)
+                if (cleanedSelection != securePreferences.homeInterfaceNames) {
+                    securePreferences.homeInterfaceNames = cleanedSelection
+                }
                 _uiState.value = _uiState.value.copy(
                     availableInterfaces = names,
+                    selectedInterfaces = cleanedSelection,
                     isLoadingInterfaces = false
                 )
             } else {
