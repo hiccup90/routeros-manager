@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.routeros.manager.ui.home.HomeScreen
 import com.routeros.manager.ui.network.NetworkScreen
+import com.routeros.manager.ui.network.detail.AdvancedNetworkScreen
 import com.routeros.manager.ui.network.detail.DhcpClientListScreen
 import com.routeros.manager.ui.network.detail.DhcpLeaseListScreen
 import com.routeros.manager.ui.network.detail.DhcpServerListScreen
@@ -74,6 +75,15 @@ fun RouterOSNavHost(
 
         composable(NetworkRoutes.NAT_RULES) {
             NatRuleListScreen(onNavigateBack = popBack)
+        }
+
+        composable(NetworkRoutes.ADVANCED) {
+            AdvancedNetworkScreen(
+                onNavigateBack = popBack,
+                onOpenDns = { navController.navigate(NetworkRoutes.DNS_RECORDS) },
+                onOpenFilterRules = { navController.navigate(NetworkRoutes.FILTER_RULES) },
+                onOpenIpv6 = { navController.navigate(NetworkRoutes.IPV6_ADDRESSES) }
+            )
         }
 
         composable(NetworkRoutes.FILTER_RULES) {

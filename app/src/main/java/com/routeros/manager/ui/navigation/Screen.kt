@@ -60,4 +60,5 @@ object NetworkRoutes {
     const val DNS_RECORDS = "network/dns_records"
     const val NAT_RULES = "network/nat_rules"
     const val FILTER_RULES = "network/filter_rules"
+    const val ADVANCED = "network/advanced"
 }
