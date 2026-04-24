@@ -36,7 +36,9 @@ class DhcpLeaseListViewModel @Inject constructor(
         val isLoading: Boolean = true,
         val error: String? = null,
         val showEditDialog: Boolean = false,
-        val editingItem: LeaseItem? = null
+        val editingItem: LeaseItem? = null,
+        val showStaticBindingDialog: Boolean = false,
+        val staticBindingItem: LeaseItem? = null
     )
 
     private val _uiState = MutableStateFlow(UiState())
@@ -64,6 +66,37 @@ class DhcpLeaseListViewModel @Inject constructor(
                 loadData()
             } else {
                 _uiState.update { it.copy(error = "静态绑定失败") }
+            }
+        }
+    }
+
+    fun showStaticBindingDialog(item: LeaseItem) {
+        _uiState.update { it.copy(showStaticBindingDialog = true, staticBindingItem = item, error = null) }
+    }
+
+    fun hideStaticBindingDialog() {
+        _uiState.update { it.copy(showStaticBindingDialog = false, staticBindingItem = null) }
+    }
+
+    fun saveStaticBinding(id: String, comment: String, address: String, server: String) {
+        viewModelScope.launch {
+            val makeStaticResult = repository.makeDhcpLeaseStatic(id)
+            if (makeStaticResult.isFailure) {
+                _uiState.update { it.copy(error = "静态绑定失败") }
+                return@launch
+            }
+
+            val updates = buildMap {
+                put("comment", comment)
+                put("address", address)
+                put("server", server)
+            }
+            val editResult = repository.editDhcpLease(id, updates)
+            if (editResult.isSuccess) {
+                hideStaticBindingDialog()
+                loadData()
+            } else {
+                _uiState.update { it.copy(error = "保存失败") }
             }
         }
     }

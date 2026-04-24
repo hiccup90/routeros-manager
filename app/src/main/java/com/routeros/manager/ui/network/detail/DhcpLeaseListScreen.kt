@@ -193,7 +193,7 @@ fun DhcpLeaseListScreen(
                                         horizontalArrangement = Arrangement.End
                                     ) {
                                         if (item.isDynamic) {
-                                            TextButton(onClick = { viewModel.makeStatic(item.id) }) {
+                                            TextButton(onClick = { viewModel.showStaticBindingDialog(item) }) {
                                                 Icon(Icons.Default.PushPin, contentDescription = null)
                                                 Spacer(Modifier.height(0.dp))
                                                 Text("静态绑定")
@@ -211,6 +211,64 @@ fun DhcpLeaseListScreen(
                     }
                 }
             }
+        }
+
+        if (uiState.showStaticBindingDialog && uiState.staticBindingItem != null) {
+            val item = uiState.staticBindingItem!!
+            var comment by rememberSaveable(item.id) { mutableStateOf(item.comment) }
+            var address by rememberSaveable(item.id) { mutableStateOf(item.address) }
+            var server by rememberSaveable(item.id) { mutableStateOf(item.server) }
+
+            AlertDialog(
+                onDismissRequest = { viewModel.hideStaticBindingDialog() },
+                title = { Text("静态绑定") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(
+                            text = "先转为静态租约，再保存固定 IP / 服务器 / 备注。",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        OutlinedTextField(
+                            value = address,
+                            onValueChange = { address = it },
+                            label = { Text("固定 IP") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = server,
+                            onValueChange = { server = it },
+                            label = { Text("服务器") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = comment,
+                            onValueChange = { comment = it },
+                            label = { Text("备注") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.saveStaticBinding(
+                                id = item.id,
+                                comment = comment,
+                                address = address,
+                                server = server
+                            )
+                        }
+                    ) {
+                        Text("保存")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { viewModel.hideStaticBindingDialog() }) {
+                        Text("取消")
+                    }
+                }
+            )
         }
 
         if (uiState.showEditDialog && uiState.editingItem != null) {
