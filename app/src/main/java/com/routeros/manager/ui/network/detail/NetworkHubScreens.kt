@@ -86,26 +86,34 @@ fun FirewallHubScreen(
 fun AddressAllocationScreen(
     onNavigateBack: () -> Unit,
     onOpenDhcpServers: () -> Unit,
+    onOpenDhcpNetworks: () -> Unit,
     onOpenDhcpLeases: () -> Unit
 ) {
     HubScreen(
         title = "地址分配",
-        description = "这里聚焦 DHCP 地址分配相关内容：服务器可启停，租约当前主要用于查看。",
+        description = "这里聚焦 DHCP 地址分配相关内容：服务器可启停，网络项负责下发网关 / DNS，租约页负责设备级静态绑定。",
         onNavigateBack = onNavigateBack,
         entries = listOf(
+            HubEntry(
+                title = "DHCP 租约",
+                subtitle = "按设备查找地址、执行静态绑定与备注维护",
+                icon = Icons.AutoMirrored.Filled.List,
+                tint = PrimaryTeal,
+                onClick = onOpenDhcpLeases
+            ),
+            HubEntry(
+                title = "DHCP 网络",
+                subtitle = "编辑网段下发的网关与 DNS 参数",
+                icon = Icons.Default.Dns,
+                tint = SecondaryPurple,
+                onClick = onOpenDhcpNetworks
+            ),
             HubEntry(
                 title = "DHCP 服务器",
                 subtitle = "查看服务端配置并执行启用 / 停用",
                 icon = Icons.Default.SettingsEthernet,
                 tint = StatusInfo,
                 onClick = onOpenDhcpServers
-            ),
-            HubEntry(
-                title = "DHCP 租约",
-                subtitle = "查看已分配地址与终端租约状态",
-                icon = Icons.AutoMirrored.Filled.List,
-                tint = PrimaryTeal,
-                onClick = onOpenDhcpLeases
             )
         )
     )

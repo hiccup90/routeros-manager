@@ -6,6 +6,7 @@ import com.routeros.manager.data.api.ArpEntry
 import com.routeros.manager.data.api.DhcpClient
 import com.routeros.manager.data.api.DhcpLease
 import com.routeros.manager.data.api.DhcpLeaseMakeStaticRequest
+import com.routeros.manager.data.api.DhcpNetwork
 import com.routeros.manager.data.api.DhcpServer
 import com.routeros.manager.data.api.DnsRecord
 import com.routeros.manager.data.api.DnsRecordRequest
@@ -192,8 +193,25 @@ class RouterOSRepository @Inject constructor(
         api.getDhcpServers(request).map { DhcpServer.fromMap(it) }
     }
 
+    suspend fun getDhcpNetworks(props: List<String>? = null): Result<List<DhcpNetwork>> = runCatching {
+        val request = PrintRequest(proplist = props, withoutPaging = "")
+        api.getDhcpNetworks(request).map { DhcpNetwork.fromMap(it) }
+    }
+
     suspend fun disableDhcpServer(id: String): Result<Unit> = runCatching { api.disableDhcpServer(IdRequest(id)) }
     suspend fun enableDhcpServer(id: String): Result<Unit> = runCatching { api.enableDhcpServer(IdRequest(id)) }
+
+    suspend fun editDhcpNetwork(id: String, updates: Map<String, String>): Result<DhcpNetwork> = runCatching {
+        val result = api.editDhcpNetwork(id, updates)
+        val map = result.firstOrNull() ?: emptyMap()
+        DhcpNetwork(
+            id = map[".id"] ?: id,
+            address = map["address"] ?: "",
+            gateway = map["gateway"] ?: updates["gateway"] ?: "",
+            dnsServer = map["dns-server"] ?: updates["dns-server"] ?: "",
+            comment = map["comment"] ?: updates["comment"] ?: ""
+        )
+    }
 
     // ===== DNS =====
     suspend fun getDnsRecords(props: List<String>? = null): Result<List<DnsRecord>> = runCatching {

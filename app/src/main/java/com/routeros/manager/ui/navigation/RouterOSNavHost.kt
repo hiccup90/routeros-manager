@@ -1,17 +1,20 @@
 package com.routeros.manager.ui.navigation
 
+import android.net.Uri
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.routeros.manager.ui.home.HomeScreen
 import com.routeros.manager.ui.network.NetworkScreen
 import com.routeros.manager.ui.network.detail.AddressAllocationScreen
 import com.routeros.manager.ui.network.detail.AdvancedNetworkScreen
 import com.routeros.manager.ui.network.detail.DhcpClientListScreen
 import com.routeros.manager.ui.network.detail.DhcpLeaseListScreen
+import com.routeros.manager.ui.network.detail.DhcpNetworkListScreen
 import com.routeros.manager.ui.network.detail.DhcpServerListScreen
 import com.routeros.manager.ui.network.detail.DnsRecordListScreen
 import com.routeros.manager.ui.network.detail.FilterRuleListScreen
@@ -41,7 +44,11 @@ fun RouterOSNavHost(
         }
 
         composable(Screen.Terminal.route) {
-            TerminalScreen()
+            TerminalScreen(
+                onOpenNetworkConfig = { query ->
+                    navController.navigate("${NetworkRoutes.DHCP_LEASES_BASE}?query=${Uri.encode(query)}")
+                }
+            )
         }
 
         composable(Screen.Network.route) {
@@ -64,7 +71,8 @@ fun RouterOSNavHost(
             AddressAllocationScreen(
                 onNavigateBack = popBack,
                 onOpenDhcpServers = { navController.navigate(NetworkRoutes.DHCP_SERVERS) },
-                onOpenDhcpLeases = { navController.navigate(NetworkRoutes.DHCP_LEASES) }
+                onOpenDhcpNetworks = { navController.navigate(NetworkRoutes.DHCP_NETWORKS) },
+                onOpenDhcpLeases = { navController.navigate("${NetworkRoutes.DHCP_LEASES_BASE}?query=") }
             )
         }
 
@@ -92,8 +100,18 @@ fun RouterOSNavHost(
             DhcpServerListScreen(onNavigateBack = popBack)
         }
 
-        composable(NetworkRoutes.DHCP_LEASES) {
-            DhcpLeaseListScreen(onNavigateBack = popBack)
+        composable(NetworkRoutes.DHCP_NETWORKS) {
+            DhcpNetworkListScreen(onNavigateBack = popBack)
+        }
+
+        composable(
+            route = NetworkRoutes.DHCP_LEASES,
+            arguments = listOf(navArgument("query") { defaultValue = "" })
+        ) { backStackEntry ->
+            DhcpLeaseListScreen(
+                onNavigateBack = popBack,
+                initialQuery = backStackEntry.arguments?.getString("query").orEmpty()
+            )
         }
 
         composable(NetworkRoutes.DNS_RECORDS) {

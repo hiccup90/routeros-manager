@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Security
@@ -59,7 +60,15 @@ fun NetworkScreen(
 ) {
     val quickActions = listOf(
         NetworkQuickAction(
-            title = "防火墙",
+            title = "设备网络配置",
+            headline = "从设备直接进入静态绑定与租约定位",
+            supporting = "适合先找到 NAS、打印机、手机，再去改静态绑定、网关 / DNS 所在配置。",
+            icon = Icons.Default.Devices,
+            tint = PrimaryTeal,
+            onClick = { navController.navigate("${NetworkRoutes.DHCP_LEASES_BASE}?query=") }
+        ),
+        NetworkQuickAction(
+            title = "防火墙 / 端口转发",
             headline = "NAT 与 Filter 规则集中管理",
             supporting = "优先承接真实可编辑的防护、放行与端口转发能力",
             icon = Icons.Default.Security,
@@ -68,8 +77,8 @@ fun NetworkScreen(
         ),
         NetworkQuickAction(
             title = "地址分配",
-            headline = "DHCP 服务器与租约",
-            supporting = "服务器可启停，租约当前以查看为主，不夸大设备级配置能力",
+            headline = "DHCP 租约、网络参数与服务器",
+            supporting = "租约负责设备级静态绑定，DHCP 网络负责网关 / DNS，服务器页处理服务开关与基础配置。",
             icon = Icons.Default.SettingsEthernet,
             tint = StatusInfo,
             onClick = { navController.navigate(NetworkRoutes.ADDRESS_ALLOCATION) }
@@ -122,7 +131,7 @@ fun NetworkScreen(
             item {
                 SectionHint(
                     title = "网络配置控制中心",
-                    subtitle = "首页只保留当前真正可进入并操作的配置模块；设备展示继续留在终端页。"
+                    subtitle = "首页优先放高频任务入口；终端页负责看设备状态，网络页负责真正改配置。"
                 )
             }
 

@@ -94,11 +94,21 @@ class DhcpLeaseListViewModelTest {
     }
 
     @Test
-    fun `saveStaticBindingWizard makes lease static then edits fields and refreshes`() = runTest {
+    fun `saveStaticBindingWizard makes lease static then updates lease and dhcp network`() = runTest {
         val initialLease = lease(id = "*86", dynamic = true, comment = "old", address = "192.168.88.10", server = "dhcp1")
         val refreshedLease = lease(id = "*86", dynamic = false, comment = "printer", address = "192.168.88.20", server = "dhcp2")
         coEvery { repository.isConfigured() } returns true
         coEvery { repository.getDhcpLeases() } returns Result.success(listOf(initialLease)) andThen Result.success(listOf(refreshedLease))
+        coEvery { repository.getDhcpNetworks() } returns Result.success(
+            listOf(
+                com.routeros.manager.data.api.DhcpNetwork(
+                    id = "*1",
+                    address = "192.168.88.0/24",
+                    gateway = "192.168.88.1",
+                    dnsServer = "192.168.88.1"
+                )
+            )
+        )
         coEvery { repository.makeDhcpLeaseStatic("*86") } returns Result.success(Unit)
         coEvery {
             repository.editDhcpLease(
@@ -106,16 +116,32 @@ class DhcpLeaseListViewModelTest {
                 mapOf("comment" to "printer", "address" to "192.168.88.20", "server" to "dhcp2")
             )
         } returns Result.success(refreshedLease)
+        coEvery {
+            repository.editDhcpNetwork(
+                "*1",
+                mapOf("gateway" to "192.168.88.1", "dns-server" to "192.168.88.1,1.1.1.1")
+            )
+        } returns Result.success(
+            com.routeros.manager.data.api.DhcpNetwork(
+                id = "*1",
+                address = "192.168.88.0/24",
+                gateway = "192.168.88.1",
+                dnsServer = "192.168.88.1,1.1.1.1"
+            )
+        )
 
         val viewModel = DhcpLeaseListViewModel(repository)
         testDispatcher.scheduler.advanceUntilIdle()
         viewModel.showStaticBindingDialog(viewModel.uiState.value.items.single())
+        testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.saveStaticBinding(
             id = "*86",
             comment = "printer",
             address = "192.168.88.20",
-            server = "dhcp2"
+            server = "dhcp2",
+            gateway = "192.168.88.1",
+            dnsServer = "192.168.88.1,1.1.1.1"
         )
         testDispatcher.scheduler.advanceUntilIdle()
 
@@ -124,6 +150,12 @@ class DhcpLeaseListViewModelTest {
             repository.editDhcpLease(
                 "*86",
                 mapOf("comment" to "printer", "address" to "192.168.88.20", "server" to "dhcp2")
+            )
+        }
+        coVerify(exactly = 1) {
+            repository.editDhcpNetwork(
+                "*1",
+                mapOf("gateway" to "192.168.88.1", "dns-server" to "192.168.88.1,1.1.1.1")
             )
         }
         assertEquals(false, viewModel.uiState.value.items.single().isDynamic)

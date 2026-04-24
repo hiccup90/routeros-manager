@@ -33,12 +33,17 @@ class DhcpLeaseListViewModel @Inject constructor(
 
     data class UiState(
         val items: List<LeaseItem> = emptyList(),
+        val filteredItems: List<LeaseItem> = emptyList(),
+        val query: String = "",
         val isLoading: Boolean = true,
         val error: String? = null,
         val showEditDialog: Boolean = false,
         val editingItem: LeaseItem? = null,
         val showStaticBindingDialog: Boolean = false,
-        val staticBindingItem: LeaseItem? = null
+        val staticBindingItem: LeaseItem? = null,
+        val staticBindingGateway: String = "",
+        val staticBindingDnsServer: String = "",
+        val staticBindingNetworkId: String? = null
     )
 
     private val _uiState = MutableStateFlow(UiState())
@@ -55,7 +60,19 @@ class DhcpLeaseListViewModel @Inject constructor(
                 return@launch
             }
             val items = result.getOrDefault(emptyList()).map { it.toLeaseItem() }
-            _uiState.update { it.copy(items = items, isLoading = false) }
+            _uiState.update { state ->
+                state.copy(
+                    items = items,
+                    filteredItems = filterItems(items, state.query),
+                    isLoading = false
+                )
+            }
+        }
+    }
+
+    fun updateQuery(query: String) {
+        _uiState.update { state ->
+            state.copy(query = query, filteredItems = filterItems(state.items, query))
         }
     }
 
@@ -71,14 +88,36 @@ class DhcpLeaseListViewModel @Inject constructor(
     }
 
     fun showStaticBindingDialog(item: LeaseItem) {
-        _uiState.update { it.copy(showStaticBindingDialog = true, staticBindingItem = item, error = null) }
+        viewModelScope.launch {
+            val network = repository.getDhcpNetworks().getOrDefault(emptyList()).firstOrNull { candidate ->
+                sameSubnet(item.address, candidate.address)
+            }
+            _uiState.update {
+                it.copy(
+                    showStaticBindingDialog = true,
+                    staticBindingItem = item,
+                    staticBindingGateway = network?.gateway.orEmpty(),
+                    staticBindingDnsServer = network?.dnsServer.orEmpty(),
+                    staticBindingNetworkId = network?.id,
+                    error = null
+                )
+            }
+        }
     }
 
     fun hideStaticBindingDialog() {
-        _uiState.update { it.copy(showStaticBindingDialog = false, staticBindingItem = null) }
+        _uiState.update {
+            it.copy(
+                showStaticBindingDialog = false,
+                staticBindingItem = null,
+                staticBindingGateway = "",
+                staticBindingDnsServer = "",
+                staticBindingNetworkId = null
+            )
+        }
     }
 
-    fun saveStaticBinding(id: String, comment: String, address: String, server: String) {
+    fun saveStaticBinding(id: String, comment: String, address: String, server: String, gateway: String, dnsServer: String) {
         viewModelScope.launch {
             val makeStaticResult = repository.makeDhcpLeaseStatic(id)
             if (makeStaticResult.isFailure) {
@@ -86,18 +125,32 @@ class DhcpLeaseListViewModel @Inject constructor(
                 return@launch
             }
 
-            val updates = buildMap {
+            val leaseUpdates = buildMap {
                 put("comment", comment)
                 put("address", address)
                 put("server", server)
             }
-            val editResult = repository.editDhcpLease(id, updates)
-            if (editResult.isSuccess) {
-                hideStaticBindingDialog()
-                loadData()
-            } else {
+            val editLeaseResult = repository.editDhcpLease(id, leaseUpdates)
+            if (editLeaseResult.isFailure) {
                 _uiState.update { it.copy(error = "保存失败") }
+                return@launch
             }
+
+            val networkId = uiState.value.staticBindingNetworkId
+            if (!networkId.isNullOrBlank() && (gateway.isNotBlank() || dnsServer.isNotBlank())) {
+                val networkUpdates = buildMap {
+                    if (gateway.isNotBlank()) put("gateway", gateway)
+                    if (dnsServer.isNotBlank()) put("dns-server", dnsServer)
+                }
+                val editNetworkResult = repository.editDhcpNetwork(networkId, networkUpdates)
+                if (editNetworkResult.isFailure) {
+                    _uiState.update { it.copy(error = "DHCP 网络参数保存失败") }
+                    return@launch
+                }
+            }
+
+            hideStaticBindingDialog()
+            loadData()
         }
     }
 
@@ -124,6 +177,38 @@ class DhcpLeaseListViewModel @Inject constructor(
                 _uiState.update { it.copy(error = "保存失败") }
             }
         }
+    }
+
+    private fun filterItems(items: List<LeaseItem>, query: String): List<LeaseItem> {
+        val keyword = query.trim().lowercase()
+        if (keyword.isEmpty()) return items
+        return items.filter { item ->
+            listOf(item.displayName, item.address, item.macAddress, item.server, item.comment, item.hostname, item.activeHostName)
+                .any { candidate -> candidate.lowercase().contains(keyword) }
+        }
+    }
+
+    private fun sameSubnet(ipAddress: String, cidr: String): Boolean {
+        val ip = ipAddress.substringBefore('/').trim()
+        val networkIp = cidr.substringBefore('/').trim()
+        val prefix = cidr.substringAfter('/', "24").toIntOrNull() ?: return false
+        if (prefix !in 0..32) return false
+        val ipValue = ipv4ToInt(ip) ?: return false
+        val networkValue = ipv4ToInt(networkIp) ?: return false
+        val mask = if (prefix == 0) 0 else (-1 shl (32 - prefix))
+        return (ipValue and mask) == (networkValue and mask)
+    }
+
+    private fun ipv4ToInt(value: String): Int? {
+        val parts = value.split('.')
+        if (parts.size != 4) return null
+        var result = 0
+        for (part in parts) {
+            val octet = part.toIntOrNull() ?: return null
+            if (octet !in 0..255) return null
+            result = (result shl 8) or octet
+        }
+        return result
     }
 
     private fun DhcpLease.toLeaseItem(): LeaseItem {

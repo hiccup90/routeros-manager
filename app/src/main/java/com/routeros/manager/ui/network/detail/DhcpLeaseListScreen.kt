@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -54,13 +55,19 @@ import com.routeros.manager.ui.theme.StatusSuccess
 @Composable
 fun DhcpLeaseListScreen(
     viewModel: DhcpLeaseListViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    initialQuery: String = ""
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { snackbarHostState.showSnackbar(it) }
+    }
+    LaunchedEffect(initialQuery) {
+        if (initialQuery.isNotBlank()) {
+            viewModel.updateQuery(initialQuery)
+        }
     }
 
     Scaffold(
@@ -108,12 +115,32 @@ fun DhcpLeaseListScreen(
                 }
 
                 else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(uiState.items, key = { it.id }) { item ->
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        OutlinedTextField(
+                            value = uiState.query,
+                            onValueChange = viewModel::updateQuery,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            singleLine = true,
+                            label = { Text("筛选设备 / IP / MAC") }
+                        )
+                        if (uiState.filteredItems.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(24.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("没有匹配的设备或租约", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                        items(uiState.filteredItems, key = { it.id }) { item ->
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = CardDefaults.cardColors(
@@ -195,17 +222,19 @@ fun DhcpLeaseListScreen(
                                         if (item.isDynamic) {
                                             TextButton(onClick = { viewModel.showStaticBindingDialog(item) }) {
                                                 Icon(Icons.Default.PushPin, contentDescription = null)
-                                                Spacer(Modifier.height(0.dp))
+                                                Spacer(Modifier.width(6.dp))
                                                 Text("静态绑定")
                                             }
                                         }
                                         TextButton(onClick = { viewModel.showEditDialog(item) }) {
                                             Icon(Icons.Default.Edit, contentDescription = null)
-                                            Spacer(Modifier.height(0.dp))
+                                            Spacer(Modifier.width(6.dp))
                                             Text("编辑")
                                         }
                                     }
                                 }
+                            }
+                        }
                             }
                         }
                     }
@@ -218,6 +247,8 @@ fun DhcpLeaseListScreen(
             var comment by rememberSaveable(item.id) { mutableStateOf(item.comment) }
             var address by rememberSaveable(item.id) { mutableStateOf(item.address) }
             var server by rememberSaveable(item.id) { mutableStateOf(item.server) }
+            var gateway by rememberSaveable(item.id) { mutableStateOf(uiState.staticBindingGateway) }
+            var dnsServer by rememberSaveable(item.id) { mutableStateOf(uiState.staticBindingDnsServer) }
 
             AlertDialog(
                 onDismissRequest = { viewModel.hideStaticBindingDialog() },
@@ -225,7 +256,7 @@ fun DhcpLeaseListScreen(
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(
-                            text = "先转为静态租约，再保存固定 IP / 服务器 / 备注。",
+                            text = "先转为静态租约，再保存固定 IP / 服务器 / 备注；网关和 DNS 来自匹配到的 DHCP 网络。",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -239,6 +270,18 @@ fun DhcpLeaseListScreen(
                             value = server,
                             onValueChange = { server = it },
                             label = { Text("服务器") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = gateway,
+                            onValueChange = { gateway = it },
+                            label = { Text("网关") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = dnsServer,
+                            onValueChange = { dnsServer = it },
+                            label = { Text("DNS 服务器") },
                             modifier = Modifier.fillMaxWidth()
                         )
                         OutlinedTextField(
@@ -256,7 +299,9 @@ fun DhcpLeaseListScreen(
                                 id = item.id,
                                 comment = comment,
                                 address = address,
-                                server = server
+                                server = server,
+                                gateway = gateway,
+                                dnsServer = dnsServer
                             )
                         }
                     ) {

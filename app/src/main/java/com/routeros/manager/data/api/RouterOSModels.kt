@@ -161,6 +161,26 @@ data class DhcpServer(
     }
 }
 
+data class DhcpNetwork(
+    @SerializedName(".id") val id: String = "",
+    val address: String = "",
+    val gateway: String = "",
+    @SerializedName("dns-server") val dnsServer: String = "",
+    val comment: String = ""
+) {
+    companion object {
+        fun fromMap(map: Map<String, String>): DhcpNetwork {
+            return DhcpNetwork(
+                id = map[".id"] ?: "",
+                address = map["address"] ?: "",
+                gateway = map["gateway"] ?: "",
+                dnsServer = map["dns-server"] ?: "",
+                comment = map["comment"] ?: ""
+            )
+        }
+    }
+}
+
 // DNS
 data class DnsRecord(
     @SerializedName(".id") val id: String = "",

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Router
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -68,7 +69,8 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TerminalScreen(
-    viewModel: TerminalViewModel = hiltViewModel()
+    viewModel: TerminalViewModel = hiltViewModel(),
+    onOpenNetworkConfig: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val expandedMap = remember { mutableStateMapOf<String, Boolean>() }
@@ -167,7 +169,8 @@ fun TerminalScreen(
                                 DeviceCard(
                                     device = device,
                                     expanded = expanded,
-                                    onToggle = { expandedMap[device.key] = !expanded }
+                                    onToggle = { expandedMap[device.key] = !expanded },
+                                    onOpenNetworkConfig = onOpenNetworkConfig
                                 )
                             }
                         }
@@ -232,7 +235,8 @@ private fun SummaryCard(
 private fun DeviceCard(
     device: TerminalDeviceUiModel,
     expanded: Boolean,
-    onToggle: () -> Unit
+    onToggle: () -> Unit,
+    onOpenNetworkConfig: (String) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -307,6 +311,16 @@ private fun DeviceCard(
                         }
                         if (device.comment.isNotBlank()) {
                             DetailLine("备注", device.comment)
+                        }
+                        Button(
+                            onClick = {
+                                val query = listOf(device.primaryAddress, device.macAddress, device.displayName)
+                                    .firstOrNull { it.isNotBlank() && it != "--" }
+                                    .orEmpty()
+                                onOpenNetworkConfig(query)
+                            }
+                        ) {
+                            Text("网络配置")
                         }
                         SourceChips(device.sources)
                     }
