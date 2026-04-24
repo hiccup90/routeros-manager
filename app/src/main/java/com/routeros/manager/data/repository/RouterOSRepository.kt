@@ -5,6 +5,7 @@ import com.routeros.manager.data.api.AddIpv6AddressRequest
 import com.routeros.manager.data.api.ArpEntry
 import com.routeros.manager.data.api.DhcpClient
 import com.routeros.manager.data.api.DhcpLease
+import com.routeros.manager.data.api.DhcpLeaseMakeStaticRequest
 import com.routeros.manager.data.api.DhcpServer
 import com.routeros.manager.data.api.DnsRecord
 import com.routeros.manager.data.api.DnsRecordRequest
@@ -146,9 +147,34 @@ class RouterOSRepository @Inject constructor(
                 lastSeen = map["last-seen"] ?: "",
                 comment = map["comment"] ?: "",
                 clientId = map["client-id"] ?: "",
-                radius = map["radius"] ?: ""
+                radius = map["radius"] ?: "",
+                dynamic = map["dynamic"] ?: "false"
             )
         }
+    }
+
+    suspend fun makeDhcpLeaseStatic(id: String): Result<Unit> = runCatching {
+        api.makeDhcpLeaseStatic(DhcpLeaseMakeStaticRequest(numbers = id))
+    }
+
+    suspend fun editDhcpLease(id: String, updates: Map<String, String>): Result<DhcpLease> = runCatching {
+        val result = api.editDhcpLease(id, updates)
+        val map = result.firstOrNull() ?: emptyMap()
+        DhcpLease(
+            id = map[".id"] ?: id,
+            address = map["address"] ?: updates["address"] ?: "",
+            macAddress = map["mac-address"] ?: "",
+            activeHostName = map["active-host-name"] ?: map["active-hostname"] ?: "",
+            hostname = map["host-name"] ?: map["hostname"] ?: "",
+            status = map["status"] ?: "",
+            server = map["server"] ?: updates["server"] ?: "",
+            expires = map["expires"] ?: "",
+            lastSeen = map["last-seen"] ?: "",
+            comment = map["comment"] ?: updates["comment"] ?: "",
+            clientId = map["client-id"] ?: "",
+            radius = map["radius"] ?: "",
+            dynamic = map["dynamic"] ?: "false"
+        )
     }
 
     // ===== DHCP Client =====

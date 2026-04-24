@@ -109,8 +109,11 @@ data class DhcpLease(
     @SerializedName("last-seen") val lastSeen: String = "",
     val comment: String = "",
     @SerializedName("client-id") val clientId: String = "",
-    val radius: String = ""
+    val radius: String = "",
+    val dynamic: String = "false"
 )
+
+data class DhcpLeaseMakeStaticRequest(val numbers: String)
 
 data class DhcpClient(
     @SerializedName(".id") val id: String = "",

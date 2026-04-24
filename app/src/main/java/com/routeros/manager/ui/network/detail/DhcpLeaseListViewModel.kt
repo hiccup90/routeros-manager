@@ -2,6 +2,7 @@ package com.routeros.manager.ui.network.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.routeros.manager.data.api.DhcpLease
 import com.routeros.manager.data.repository.RouterOSRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,13 +27,16 @@ class DhcpLeaseListViewModel @Inject constructor(
         val status: String,
         val server: String,
         val expires: String,
-        val comment: String
+        val comment: String,
+        val isDynamic: Boolean
     )
 
     data class UiState(
         val items: List<LeaseItem> = emptyList(),
         val isLoading: Boolean = true,
-        val error: String? = null
+        val error: String? = null,
+        val showEditDialog: Boolean = false,
+        val editingItem: LeaseItem? = null
     )
 
     private val _uiState = MutableStateFlow(UiState())
@@ -48,26 +52,65 @@ class DhcpLeaseListViewModel @Inject constructor(
                 _uiState.update { it.copy(isLoading = false, error = "加载失败: ${result.exceptionOrNull()?.message}") }
                 return@launch
             }
-            val items = result.getOrDefault(emptyList()).map { l ->
-                val displayName = l.activeHostName.ifBlank {
-                    l.hostname.ifBlank {
-                        l.address
-                    }
-                }
-                LeaseItem(
-                    id = l.id,
-                    address = l.address,
-                    macAddress = l.macAddress,
-                    displayName = displayName,
-                    hostname = l.hostname,
-                    activeHostName = l.activeHostName,
-                    status = l.status,
-                    server = l.server,
-                    expires = l.expires,
-                    comment = l.comment
-                )
-            }
+            val items = result.getOrDefault(emptyList()).map { it.toLeaseItem() }
             _uiState.update { it.copy(items = items, isLoading = false) }
         }
+    }
+
+    fun makeStatic(id: String) {
+        viewModelScope.launch {
+            val result = repository.makeDhcpLeaseStatic(id)
+            if (result.isSuccess) {
+                loadData()
+            } else {
+                _uiState.update { it.copy(error = "静态绑定失败") }
+            }
+        }
+    }
+
+    fun showEditDialog(item: LeaseItem) {
+        _uiState.update { it.copy(showEditDialog = true, editingItem = item, error = null) }
+    }
+
+    fun hideEditDialog() {
+        _uiState.update { it.copy(showEditDialog = false, editingItem = null) }
+    }
+
+    fun editLease(id: String, comment: String, address: String, server: String) {
+        viewModelScope.launch {
+            val updates = buildMap {
+                put("comment", comment)
+                put("address", address)
+                put("server", server)
+            }
+            val result = repository.editDhcpLease(id, updates)
+            if (result.isSuccess) {
+                hideEditDialog()
+                loadData()
+            } else {
+                _uiState.update { it.copy(error = "保存失败") }
+            }
+        }
+    }
+
+    private fun DhcpLease.toLeaseItem(): LeaseItem {
+        val displayName = activeHostName.ifBlank {
+            hostname.ifBlank {
+                address
+            }
+        }
+        return LeaseItem(
+            id = id,
+            address = address,
+            macAddress = macAddress,
+            displayName = displayName,
+            hostname = hostname,
+            activeHostName = activeHostName,
+            status = status,
+            server = server,
+            expires = expires,
+            comment = comment,
+            isDynamic = dynamic == "true"
+        )
     }
 }

@@ -49,6 +49,12 @@ interface RouterOSApi {
     @POST("/rest/ip/dhcp-server/lease/print")
     suspend fun getDhcpLeases(@Body request: PrintRequest): List<Map<String, String>>
 
+    @POST("/rest/ip/dhcp-server/lease/make-static")
+    suspend fun makeDhcpLeaseStatic(@Body request: DhcpLeaseMakeStaticRequest)
+
+    @PATCH("/rest/ip/dhcp-server/lease/{id}")
+    suspend fun editDhcpLease(@Path("id") id: String, @Body request: Map<String, String>): List<Map<String, String>>
+
     // DHCP Client
     @POST("/rest/ip/dhcp-client/print")
     suspend fun getDhcpClients(@Body request: PrintRequest): List<Map<String, String>>
