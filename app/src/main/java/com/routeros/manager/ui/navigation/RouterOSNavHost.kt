@@ -8,13 +8,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.routeros.manager.ui.home.HomeScreen
 import com.routeros.manager.ui.network.NetworkScreen
+import com.routeros.manager.ui.network.detail.AddressAllocationScreen
 import com.routeros.manager.ui.network.detail.AdvancedNetworkScreen
 import com.routeros.manager.ui.network.detail.DhcpClientListScreen
 import com.routeros.manager.ui.network.detail.DhcpLeaseListScreen
 import com.routeros.manager.ui.network.detail.DhcpServerListScreen
 import com.routeros.manager.ui.network.detail.DnsRecordListScreen
 import com.routeros.manager.ui.network.detail.FilterRuleListScreen
+import com.routeros.manager.ui.network.detail.FirewallHubScreen
 import com.routeros.manager.ui.network.detail.IpAddressListScreen
+import com.routeros.manager.ui.network.detail.IpManagementScreen
 import com.routeros.manager.ui.network.detail.Ipv6AddressListScreen
 import com.routeros.manager.ui.network.detail.NatRuleListScreen
 import com.routeros.manager.ui.settings.SettingsScreen
@@ -49,6 +52,30 @@ fun RouterOSNavHost(
             SettingsScreen()
         }
 
+        composable(NetworkRoutes.FIREWALL_HUB) {
+            FirewallHubScreen(
+                onNavigateBack = popBack,
+                onOpenNatRules = { navController.navigate(NetworkRoutes.NAT_RULES) },
+                onOpenFilterRules = { navController.navigate(NetworkRoutes.FILTER_RULES) }
+            )
+        }
+
+        composable(NetworkRoutes.ADDRESS_ALLOCATION) {
+            AddressAllocationScreen(
+                onNavigateBack = popBack,
+                onOpenDhcpServers = { navController.navigate(NetworkRoutes.DHCP_SERVERS) },
+                onOpenDhcpLeases = { navController.navigate(NetworkRoutes.DHCP_LEASES) }
+            )
+        }
+
+        composable(NetworkRoutes.IP_MANAGEMENT) {
+            IpManagementScreen(
+                onNavigateBack = popBack,
+                onOpenIpv4Addresses = { navController.navigate(NetworkRoutes.IP_ADDRESSES) },
+                onOpenIpv6Addresses = { navController.navigate(NetworkRoutes.IPV6_ADDRESSES) }
+            )
+        }
+
         composable(NetworkRoutes.IP_ADDRESSES) {
             IpAddressListScreen(onNavigateBack = popBack)
         }
@@ -80,9 +107,7 @@ fun RouterOSNavHost(
         composable(NetworkRoutes.ADVANCED) {
             AdvancedNetworkScreen(
                 onNavigateBack = popBack,
-                onOpenDns = { navController.navigate(NetworkRoutes.DNS_RECORDS) },
-                onOpenFilterRules = { navController.navigate(NetworkRoutes.FILTER_RULES) },
-                onOpenIpv6 = { navController.navigate(NetworkRoutes.IPV6_ADDRESSES) }
+                onOpenDns = { navController.navigate(NetworkRoutes.DNS_RECORDS) }
             )
         }
 

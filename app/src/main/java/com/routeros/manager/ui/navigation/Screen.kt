@@ -52,6 +52,9 @@ sealed class Screen(
 
 // Network sub-screens
 object NetworkRoutes {
+    const val FIREWALL_HUB = "network/firewall"
+    const val ADDRESS_ALLOCATION = "network/address_allocation"
+    const val IP_MANAGEMENT = "network/ip_management"
     const val IP_ADDRESSES = "network/ip_addresses"
     const val IPV6_ADDRESSES = "network/ipv6_addresses"
     const val DHCP_CLIENTS = "network/dhcp_clients"

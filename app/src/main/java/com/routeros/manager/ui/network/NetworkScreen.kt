@@ -17,9 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.Hub
-import androidx.compose.material.icons.filled.Lan
-import androidx.compose.material.icons.filled.Route
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.SettingsEthernet
 import androidx.compose.material.icons.filled.SwapHoriz
@@ -45,11 +43,6 @@ import com.routeros.manager.ui.theme.SecondaryPurple
 import com.routeros.manager.ui.theme.StatusInfo
 import com.routeros.manager.ui.theme.StatusWarning
 
-private data class NetworkSummaryItem(
-    val label: String,
-    val value: String
-)
-
 private data class NetworkQuickAction(
     val title: String,
     val headline: String,
@@ -64,43 +57,36 @@ private data class NetworkQuickAction(
 fun NetworkScreen(
     navController: NavController
 ) {
-    val summaryItems = listOf(
-        NetworkSummaryItem("WAN", "已连接"),
-        NetworkSummaryItem("公网 IP", "动态获取"),
-        NetworkSummaryItem("活跃租约", "DHCP / 终端查看"),
-        NetworkSummaryItem("NAT 规则", "端口转发入口")
-    )
-
     val quickActions = listOf(
         NetworkQuickAction(
-            title = "地址与接口",
-            headline = "LAN 192.168.88.1/24",
-            supporting = "IPv4 / IPv6 · 接口与出口状态",
-            icon = Icons.Default.Lan,
-            tint = PrimaryTeal,
-            onClick = { navController.navigate(NetworkRoutes.IP_ADDRESSES) }
+            title = "防火墙",
+            headline = "NAT 与 Filter 规则集中管理",
+            supporting = "优先承接真实可编辑的防护、放行与端口转发能力",
+            icon = Icons.Default.Security,
+            tint = StatusWarning,
+            onClick = { navController.navigate(NetworkRoutes.FIREWALL_HUB) }
         ),
         NetworkQuickAction(
-            title = "DHCP",
-            headline = "服务端、租约与客户端",
-            supporting = "常用地址分配配置入口",
+            title = "地址分配",
+            headline = "DHCP 服务器与租约",
+            supporting = "服务器可启停，租约当前以查看为主，不夸大设备级配置能力",
             icon = Icons.Default.SettingsEthernet,
             tint = StatusInfo,
-            onClick = { navController.navigate(NetworkRoutes.DHCP_SERVERS) }
+            onClick = { navController.navigate(NetworkRoutes.ADDRESS_ALLOCATION) }
         ),
         NetworkQuickAction(
-            title = "端口转发 / NAT",
-            headline = "快速管理映射规则",
-            supporting = "前置高频外网访问配置",
-            icon = Icons.Default.SwapHoriz,
-            tint = StatusWarning,
-            onClick = { navController.navigate(NetworkRoutes.NAT_RULES) }
+            title = "IP 地址",
+            headline = "IPv4 / IPv6 地址管理",
+            supporting = "集中放置已支持真实增删改与启停的地址配置",
+            icon = Icons.Default.Language,
+            tint = PrimaryTeal,
+            onClick = { navController.navigate(NetworkRoutes.IP_MANAGEMENT) }
         ),
         NetworkQuickAction(
-            title = "高级网络",
-            headline = "DNS · 路由 · 防火墙",
-            supporting = "低频但重要的高级入口",
-            icon = Icons.Default.Route,
+            title = "更多网络设置",
+            headline = "DNS 与后续网络能力入口",
+            supporting = "DNS 静态记录可编辑；路由、Bridge、VLAN 保留为后续扩展入口",
+            icon = Icons.Default.Dns,
             tint = SecondaryPurple,
             onClick = { navController.navigate(NetworkRoutes.ADVANCED) }
         )
@@ -134,13 +120,9 @@ fun NetworkScreen(
             }
 
             item {
-                SummaryCard(items = summaryItems)
-            }
-
-            item {
                 SectionHint(
-                    title = "常用网络操作",
-                    subtitle = "首页只保留高频配置，设备查看留在终端页。"
+                    title = "网络配置控制中心",
+                    subtitle = "首页只保留当前真正可进入并操作的配置模块；设备展示继续留在终端页。"
                 )
             }
 
@@ -157,7 +139,10 @@ fun NetworkScreen(
 }
 
 @Composable
-private fun SummaryCard(items: List<NetworkSummaryItem>) {
+private fun SectionHint(
+    title: String,
+    subtitle: String
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -166,53 +151,19 @@ private fun SummaryCard(items: List<NetworkSummaryItem>) {
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = "网络概览",
+                text = title,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onBackground
             )
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                items.forEach { item ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = item.label,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = item.value,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            }
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
-    }
-}
-
-@Composable
-private fun SectionHint(
-    title: String,
-    subtitle: String
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Text(
-            text = subtitle,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }
 
