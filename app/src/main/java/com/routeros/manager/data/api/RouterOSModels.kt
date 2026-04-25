@@ -364,6 +364,8 @@ data class FirewallConnection(
     @SerializedName("repl-bytes") val replBytes: String = "",
     @SerializedName("orig-packets") val origPackets: String = "",
     @SerializedName("repl-packets") val replPackets: String = "",
+    @SerializedName("orig-rate") val origRate: String = "",
+    @SerializedName("repl-rate") val replRate: String = "",
     val assured: String = "false",
     @SerializedName("seen-reply") val seenReply: String = "false",
     val fasttrack: String = "false",

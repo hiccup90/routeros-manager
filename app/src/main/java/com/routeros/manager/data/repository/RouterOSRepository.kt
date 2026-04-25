@@ -418,8 +418,11 @@ class RouterOSRepository @Inject constructor(
 
     suspend fun deleteFirewallAddressList(id: String): Result<Unit> = runCatching { api.deleteFirewallAddressList(id) }
 
-    suspend fun getFirewallConnections(props: List<String>? = null): Result<List<FirewallConnection>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+    suspend fun getFirewallConnections(
+        props: List<String>? = null,
+        query: List<String>? = null
+    ): Result<List<FirewallConnection>> = runCatching {
+        val request = PrintRequest(proplist = props, query = query, withoutPaging = "")
         api.getFirewallConnections(request).map { map ->
             FirewallConnection(
                 id = map[".id"] ?: "",
@@ -438,6 +441,8 @@ class RouterOSRepository @Inject constructor(
                 replBytes = map["repl-bytes"] ?: "",
                 origPackets = map["orig-packets"] ?: "",
                 replPackets = map["repl-packets"] ?: "",
+                origRate = map["orig-rate"] ?: "",
+                replRate = map["repl-rate"] ?: "",
                 assured = map["assured"] ?: "false",
                 seenReply = map["seen-reply"] ?: "false",
                 fasttrack = map["fasttrack"] ?: "false",
@@ -589,8 +594,11 @@ class RouterOSRepository @Inject constructor(
 
     suspend fun deleteIpv6FirewallAddressList(id: String): Result<Unit> = runCatching { api.deleteIpv6FirewallAddressList(id) }
 
-    suspend fun getIpv6FirewallConnections(props: List<String>? = null): Result<List<FirewallConnection>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+    suspend fun getIpv6FirewallConnections(
+        props: List<String>? = null,
+        query: List<String>? = null
+    ): Result<List<FirewallConnection>> = runCatching {
+        val request = PrintRequest(proplist = props, query = query, withoutPaging = "")
         api.getIpv6FirewallConnections(request).map { map ->
             FirewallConnection(
                 id = map[".id"] ?: "",
@@ -609,6 +617,8 @@ class RouterOSRepository @Inject constructor(
                 replBytes = map["repl-bytes"] ?: "",
                 origPackets = map["orig-packets"] ?: "",
                 replPackets = map["repl-packets"] ?: "",
+                origRate = map["orig-rate"] ?: "",
+                replRate = map["repl-rate"] ?: "",
                 assured = map["assured"] ?: "false",
                 seenReply = map["seen-reply"] ?: "false",
                 fasttrack = map["fasttrack"] ?: "false",

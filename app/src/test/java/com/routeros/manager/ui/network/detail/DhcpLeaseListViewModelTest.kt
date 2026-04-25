@@ -78,7 +78,9 @@ class DhcpLeaseListViewModelTest {
             id = "*86",
             comment = "new",
             address = "192.168.88.20",
-            server = "dhcp2"
+            server = "dhcp2",
+            addressList = "",
+            dhcpOption = ""
         )
         testDispatcher.scheduler.advanceUntilIdle()
 
@@ -140,6 +142,8 @@ class DhcpLeaseListViewModelTest {
             comment = "printer",
             address = "192.168.88.20",
             server = "dhcp2",
+            addressList = "",
+            dhcpOption = "",
             gateway = "192.168.88.1",
             dnsServer = "192.168.88.1,1.1.1.1"
         )
@@ -180,6 +184,8 @@ class DhcpLeaseListViewModelTest {
         expires = "10m",
         lastSeen = "1m",
         comment = comment,
-        dynamic = if (dynamic) "true" else "false"
+        dynamic = if (dynamic) "true" else "false",
+        addressList = "",
+        dhcpOption = ""
     )
 }

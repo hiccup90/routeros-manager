@@ -194,7 +194,11 @@ fun TerminalScreen(
                                 DeviceCard(
                                     device = device,
                                     expanded = expanded,
-                                    onToggle = { expandedMap[device.key] = !expanded },
+                                    onToggle = {
+                                        val nextExpanded = !expanded
+                                        expandedMap[device.key] = nextExpanded
+                                        viewModel.setDeviceExpanded(device.key, nextExpanded)
+                                    },
                                     onOpenNetworkConfig = onOpenNetworkConfig
                                 )
                             }
@@ -245,7 +249,7 @@ private fun SummaryCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = "数据源：DHCP / ARP / IPv6 邻居 / 接口字节差分",
+                text = "数据源：DHCP / ARP / IPv6 邻居 / Connection Tracking",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -325,11 +329,8 @@ private fun DeviceCard(
                         DetailLine("MAC", device.macAddress)
                         DetailLine("IPv6", device.ipv6Display)
                         DetailLine("接口", device.interfaceDisplay)
-                        TrafficLine(
-                            rxRate = device.interfaceRxRate,
-                            txRate = device.interfaceTxRate
-                        )
-                        DetailLine("说明", "这里显示的是接口总流量，不是单台设备独享流量")
+                        TrafficSection(device = device)
+                        DetailLine("说明", "基于 Connection Tracking 统计；展开期间每 5 秒刷新一次")
                         if (device.hostname.isNotBlank() && device.hostname != device.displayName) {
                             DetailLine("主机名", device.hostname)
                         }
@@ -364,29 +365,47 @@ private fun DeviceCard(
 }
 
 @Composable
-private fun TrafficLine(rxRate: String, txRate: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Surface(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(12.dp),
-            color = PrimaryTeal.copy(alpha = 0.12f)
+private fun TrafficSection(device: TerminalDeviceUiModel) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text("接口下载", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(rxRate, style = MaterialTheme.typography.bodyMedium, color = PrimaryTealLight, fontWeight = FontWeight.Medium)
+            Surface(
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp),
+                color = PrimaryTeal.copy(alpha = 0.12f)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("设备下载", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(device.downloadRate, style = MaterialTheme.typography.bodyMedium, color = PrimaryTealLight, fontWeight = FontWeight.Medium)
+                }
+            }
+            Surface(
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp),
+                color = SecondaryPurple.copy(alpha = 0.12f)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("设备上传", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(device.uploadRate, style = MaterialTheme.typography.bodyMedium, color = SecondaryPurple, fontWeight = FontWeight.Medium)
+                }
             }
         }
-        Surface(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(12.dp),
-            color = SecondaryPurple.copy(alpha = 0.12f)
-        ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text("接口上传", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(txRate, style = MaterialTheme.typography.bodyMedium, color = SecondaryPurple, fontWeight = FontWeight.Medium)
+        when {
+            device.isTrafficLoading -> {
+                Text(
+                    text = if (device.trafficLoaded) "正在刷新设备流量..." else "正在加载设备流量...",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            device.trafficError != null -> {
+                Text(
+                    text = device.trafficError,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
             }
         }
     }
