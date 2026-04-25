@@ -18,9 +18,13 @@ import com.routeros.manager.ui.network.detail.DhcpNetworkListScreen
 import com.routeros.manager.ui.network.detail.DhcpServerListScreen
 import com.routeros.manager.ui.network.detail.DnsRecordListScreen
 import com.routeros.manager.ui.network.detail.FilterRuleListScreen
+import com.routeros.manager.ui.network.detail.FirewallAddressListScreen
+import com.routeros.manager.ui.network.detail.FirewallConnectionListScreen
 import com.routeros.manager.ui.network.detail.FirewallPlaceholderScreen
 import com.routeros.manager.ui.network.detail.Ipv4FirewallHubScreen
 import com.routeros.manager.ui.network.detail.Ipv6FilterRuleListScreen
+import com.routeros.manager.ui.network.detail.Ipv6FirewallAddressListScreen
+import com.routeros.manager.ui.network.detail.Ipv6FirewallConnectionListScreen
 import com.routeros.manager.ui.network.detail.Ipv6FirewallHubScreen
 import com.routeros.manager.ui.network.detail.IpAddressListScreen
 import com.routeros.manager.ui.network.detail.IpManagementScreen
@@ -170,11 +174,11 @@ fun RouterOSNavHost(
         }
 
         composable(NetworkRoutes.IPV4_CONNECTIONS) {
-            FirewallPlaceholderScreen("IPv4 Connections", "这里将补 RouterOS connection tracking 连接表查看能力。", popBack)
+            FirewallConnectionListScreen(onNavigateBack = popBack)
         }
 
         composable(NetworkRoutes.IPV4_ADDRESS_LISTS) {
-            FirewallPlaceholderScreen("IPv4 Address Lists", "这里将补 RouterOS IPv4 address-list 列表与编辑能力。", popBack)
+            FirewallAddressListScreen(onNavigateBack = popBack)
         }
 
         composable(NetworkRoutes.IPV4_LAYER7) {
@@ -190,11 +194,11 @@ fun RouterOSNavHost(
         }
 
         composable(NetworkRoutes.IPV6_CONNECTIONS) {
-            FirewallPlaceholderScreen("IPv6 Connections", "这里将补 RouterOS IPv6 connection tracking 连接表查看能力。", popBack)
+            Ipv6FirewallConnectionListScreen(onNavigateBack = popBack)
         }
 
         composable(NetworkRoutes.IPV6_ADDRESS_LISTS) {
-            FirewallPlaceholderScreen("IPv6 Address Lists", "这里将补 RouterOS IPv6 address-list 列表与编辑能力。", popBack)
+            Ipv6FirewallAddressListScreen(onNavigateBack = popBack)
         }
     }
 }

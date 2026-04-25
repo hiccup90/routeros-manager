@@ -132,6 +132,27 @@ interface RouterOSApi {
     @DELETE("/rest/ip/firewall/filter/{id}")
     suspend fun deleteFirewallFilter(@Path("id") id: String)
 
+    @POST("/rest/ip/firewall/address-list/print")
+    suspend fun getFirewallAddressLists(@Body request: PrintRequest): List<Map<String, String>>
+
+    @POST("/rest/ip/firewall/address-list/disable")
+    suspend fun disableFirewallAddressList(@Body request: IdRequest)
+
+    @POST("/rest/ip/firewall/address-list/enable")
+    suspend fun enableFirewallAddressList(@Body request: IdRequest)
+
+    @HTTP(method = "PUT", path = "/rest/ip/firewall/address-list", hasBody = true)
+    suspend fun addFirewallAddressList(@Body request: Map<String, String>): List<Map<String, String>>
+
+    @PATCH("/rest/ip/firewall/address-list/{id}")
+    suspend fun editFirewallAddressList(@Path("id") id: String, @Body request: Map<String, String>): List<Map<String, String>>
+
+    @DELETE("/rest/ip/firewall/address-list/{id}")
+    suspend fun deleteFirewallAddressList(@Path("id") id: String)
+
+    @POST("/rest/ip/firewall/connection/print")
+    suspend fun getFirewallConnections(@Body request: PrintRequest): List<Map<String, String>>
+
     // IPv6 地址
     @POST("/rest/ipv6/address/print")
     suspend fun getIpv6Addresses(@Body request: PrintRequest): List<Map<String, String>>
@@ -186,4 +207,25 @@ interface RouterOSApi {
 
     @DELETE("/rest/ipv6/firewall/filter/{id}")
     suspend fun deleteIpv6FirewallFilter(@Path("id") id: String)
+
+    @POST("/rest/ipv6/firewall/address-list/print")
+    suspend fun getIpv6FirewallAddressLists(@Body request: PrintRequest): List<Map<String, String>>
+
+    @POST("/rest/ipv6/firewall/address-list/disable")
+    suspend fun disableIpv6FirewallAddressList(@Body request: IdRequest)
+
+    @POST("/rest/ipv6/firewall/address-list/enable")
+    suspend fun enableIpv6FirewallAddressList(@Body request: IdRequest)
+
+    @HTTP(method = "PUT", path = "/rest/ipv6/firewall/address-list", hasBody = true)
+    suspend fun addIpv6FirewallAddressList(@Body request: Map<String, String>): List<Map<String, String>>
+
+    @PATCH("/rest/ipv6/firewall/address-list/{id}")
+    suspend fun editIpv6FirewallAddressList(@Path("id") id: String, @Body request: Map<String, String>): List<Map<String, String>>
+
+    @DELETE("/rest/ipv6/firewall/address-list/{id}")
+    suspend fun deleteIpv6FirewallAddressList(@Path("id") id: String)
+
+    @POST("/rest/ipv6/firewall/connection/print")
+    suspend fun getIpv6FirewallConnections(@Body request: PrintRequest): List<Map<String, String>>
 }

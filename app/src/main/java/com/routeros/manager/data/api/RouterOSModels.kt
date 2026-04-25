@@ -323,6 +323,51 @@ data class Ipv6FirewallFilter(
     val comment: String = ""
 )
 
+data class FirewallAddressList(
+    @SerializedName(".id") val id: String = "",
+    val list: String = "",
+    val address: String = "",
+    val disabled: String = "false",
+    val dynamic: String = "false",
+    @SerializedName("creation-time") val creationTime: String = "",
+    val timeout: String = "",
+    val comment: String = ""
+)
+
+data class Ipv6FirewallAddressList(
+    @SerializedName(".id") val id: String = "",
+    val list: String = "",
+    val address: String = "",
+    val disabled: String = "false",
+    val dynamic: String = "false",
+    @SerializedName("creation-time") val creationTime: String = "",
+    val timeout: String = "",
+    val comment: String = ""
+)
+
+data class FirewallConnection(
+    @SerializedName(".id") val id: String = "",
+    val protocol: String = "",
+    @SerializedName("src-address") val srcAddress: String = "",
+    @SerializedName("dst-address") val dstAddress: String = "",
+    @SerializedName("src-port") val srcPort: String = "",
+    @SerializedName("dst-port") val dstPort: String = "",
+    @SerializedName("reply-src-address") val replySrcAddress: String = "",
+    @SerializedName("reply-dst-address") val replyDstAddress: String = "",
+    @SerializedName("reply-src-port") val replySrcPort: String = "",
+    @SerializedName("reply-dst-port") val replyDstPort: String = "",
+    @SerializedName("tcp-state") val tcpState: String = "",
+    val timeout: String = "",
+    @SerializedName("orig-bytes") val origBytes: String = "",
+    @SerializedName("repl-bytes") val replBytes: String = "",
+    @SerializedName("orig-packets") val origPackets: String = "",
+    @SerializedName("repl-packets") val replPackets: String = "",
+    val assured: String = "false",
+    @SerializedName("seen-reply") val seenReply: String = "false",
+    val fasttrack: String = "false",
+    @SerializedName("connection-mark") val connectionMark: String = ""
+)
+
 // 终端设备
 data class NetworkDevice(
     val key: String,
@@ -456,6 +501,20 @@ data class AddIpv6AddressRequest(
         put("address", address)
         put("interface", interface_)
         put("advertise", advertise)
+        comment?.let { put("comment", it) }
+    }
+}
+
+data class FirewallAddressListRequest(
+    val list: String,
+    val address: String,
+    val timeout: String? = null,
+    val comment: String? = null
+) {
+    fun toMap(): Map<String, String> = buildMap {
+        put("list", list)
+        put("address", address)
+        timeout?.takeIf { it.isNotBlank() }?.let { put("timeout", it) }
         comment?.let { put("comment", it) }
     }
 }

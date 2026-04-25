@@ -11,6 +11,9 @@ import com.routeros.manager.data.api.DhcpServer
 import com.routeros.manager.data.api.DnsRecord
 import com.routeros.manager.data.api.DnsRecordRequest
 import com.routeros.manager.data.api.FilterRuleRequest
+import com.routeros.manager.data.api.FirewallAddressList
+import com.routeros.manager.data.api.FirewallAddressListRequest
+import com.routeros.manager.data.api.FirewallConnection
 import com.routeros.manager.data.api.FirewallFilter
 import com.routeros.manager.data.api.IdRequest
 import com.routeros.manager.data.api.InterfaceItem
@@ -18,6 +21,7 @@ import com.routeros.manager.data.api.IpAddress
 import com.routeros.manager.data.api.Ipv6Address
 import com.routeros.manager.data.api.Ipv6DhcpClient
 import com.routeros.manager.data.api.Ipv6DhcpServer
+import com.routeros.manager.data.api.Ipv6FirewallAddressList
 import com.routeros.manager.data.api.Ipv6FirewallFilter
 import com.routeros.manager.data.api.Ipv6Neighbor
 import com.routeros.manager.data.api.MonitorTraffic
@@ -361,6 +365,83 @@ class RouterOSRepository @Inject constructor(
 
     suspend fun deleteFirewallFilter(id: String): Result<Unit> = runCatching { api.deleteFirewallFilter(id) }
 
+    suspend fun getFirewallAddressLists(props: List<String>? = null): Result<List<FirewallAddressList>> = runCatching {
+        val request = PrintRequest(proplist = props, withoutPaging = "")
+        api.getFirewallAddressLists(request).map { map ->
+            FirewallAddressList(
+                id = map[".id"] ?: "",
+                list = map["list"] ?: "",
+                address = map["address"] ?: "",
+                disabled = map["disabled"] ?: "false",
+                dynamic = map["dynamic"] ?: "false",
+                creationTime = map["creation-time"] ?: "",
+                timeout = map["timeout"] ?: "",
+                comment = map["comment"] ?: ""
+            )
+        }
+    }
+
+    suspend fun disableFirewallAddressList(id: String): Result<Unit> = runCatching { api.disableFirewallAddressList(IdRequest(id)) }
+    suspend fun enableFirewallAddressList(id: String): Result<Unit> = runCatching { api.enableFirewallAddressList(IdRequest(id)) }
+
+    suspend fun addFirewallAddressList(request: FirewallAddressListRequest): Result<FirewallAddressList> = runCatching {
+        val result = api.addFirewallAddressList(request.toMap())
+        FirewallAddressList(
+            id = result.firstOrNull()?.get(".id") ?: "",
+            list = request.list,
+            address = request.address,
+            disabled = "false",
+            dynamic = "false",
+            creationTime = "",
+            timeout = request.timeout ?: "",
+            comment = request.comment ?: ""
+        )
+    }
+
+    suspend fun editFirewallAddressList(id: String, updates: Map<String, String>): Result<FirewallAddressList> = runCatching {
+        api.editFirewallAddressList(id, updates)
+        FirewallAddressList(
+            id = id,
+            list = updates["list"] ?: "",
+            address = updates["address"] ?: "",
+            disabled = updates["disabled"] ?: "false",
+            dynamic = updates["dynamic"] ?: "false",
+            creationTime = updates["creation-time"] ?: "",
+            timeout = updates["timeout"] ?: "",
+            comment = updates["comment"] ?: ""
+        )
+    }
+
+    suspend fun deleteFirewallAddressList(id: String): Result<Unit> = runCatching { api.deleteFirewallAddressList(id) }
+
+    suspend fun getFirewallConnections(props: List<String>? = null): Result<List<FirewallConnection>> = runCatching {
+        val request = PrintRequest(proplist = props, withoutPaging = "")
+        api.getFirewallConnections(request).map { map ->
+            FirewallConnection(
+                id = map[".id"] ?: "",
+                protocol = map["protocol"] ?: "",
+                srcAddress = map["src-address"] ?: "",
+                dstAddress = map["dst-address"] ?: "",
+                srcPort = map["src-port"] ?: "",
+                dstPort = map["dst-port"] ?: "",
+                replySrcAddress = map["reply-src-address"] ?: "",
+                replyDstAddress = map["reply-dst-address"] ?: "",
+                replySrcPort = map["reply-src-port"] ?: "",
+                replyDstPort = map["reply-dst-port"] ?: "",
+                tcpState = map["tcp-state"] ?: "",
+                timeout = map["timeout"] ?: "",
+                origBytes = map["orig-bytes"] ?: "",
+                replBytes = map["repl-bytes"] ?: "",
+                origPackets = map["orig-packets"] ?: "",
+                replPackets = map["repl-packets"] ?: "",
+                assured = map["assured"] ?: "false",
+                seenReply = map["seen-reply"] ?: "false",
+                fasttrack = map["fasttrack"] ?: "false",
+                connectionMark = map["connection-mark"] ?: ""
+            )
+        }
+    }
+
     // ===== IPv6 =====
     suspend fun getIpv6Addresses(props: List<String>? = null): Result<List<Ipv6Address>> = runCatching {
         val request = PrintRequest(proplist = props, withoutPaging = "")
@@ -454,6 +535,83 @@ class RouterOSRepository @Inject constructor(
     }
 
     suspend fun deleteIpv6FirewallFilter(id: String): Result<Unit> = runCatching { api.deleteIpv6FirewallFilter(id) }
+
+    suspend fun getIpv6FirewallAddressLists(props: List<String>? = null): Result<List<Ipv6FirewallAddressList>> = runCatching {
+        val request = PrintRequest(proplist = props, withoutPaging = "")
+        api.getIpv6FirewallAddressLists(request).map { map ->
+            Ipv6FirewallAddressList(
+                id = map[".id"] ?: "",
+                list = map["list"] ?: "",
+                address = map["address"] ?: "",
+                disabled = map["disabled"] ?: "false",
+                dynamic = map["dynamic"] ?: "false",
+                creationTime = map["creation-time"] ?: "",
+                timeout = map["timeout"] ?: "",
+                comment = map["comment"] ?: ""
+            )
+        }
+    }
+
+    suspend fun disableIpv6FirewallAddressList(id: String): Result<Unit> = runCatching { api.disableIpv6FirewallAddressList(IdRequest(id)) }
+    suspend fun enableIpv6FirewallAddressList(id: String): Result<Unit> = runCatching { api.enableIpv6FirewallAddressList(IdRequest(id)) }
+
+    suspend fun addIpv6FirewallAddressList(request: FirewallAddressListRequest): Result<Ipv6FirewallAddressList> = runCatching {
+        val result = api.addIpv6FirewallAddressList(request.toMap())
+        Ipv6FirewallAddressList(
+            id = result.firstOrNull()?.get(".id") ?: "",
+            list = request.list,
+            address = request.address,
+            disabled = "false",
+            dynamic = "false",
+            creationTime = "",
+            timeout = request.timeout ?: "",
+            comment = request.comment ?: ""
+        )
+    }
+
+    suspend fun editIpv6FirewallAddressList(id: String, updates: Map<String, String>): Result<Ipv6FirewallAddressList> = runCatching {
+        api.editIpv6FirewallAddressList(id, updates)
+        Ipv6FirewallAddressList(
+            id = id,
+            list = updates["list"] ?: "",
+            address = updates["address"] ?: "",
+            disabled = updates["disabled"] ?: "false",
+            dynamic = updates["dynamic"] ?: "false",
+            creationTime = updates["creation-time"] ?: "",
+            timeout = updates["timeout"] ?: "",
+            comment = updates["comment"] ?: ""
+        )
+    }
+
+    suspend fun deleteIpv6FirewallAddressList(id: String): Result<Unit> = runCatching { api.deleteIpv6FirewallAddressList(id) }
+
+    suspend fun getIpv6FirewallConnections(props: List<String>? = null): Result<List<FirewallConnection>> = runCatching {
+        val request = PrintRequest(proplist = props, withoutPaging = "")
+        api.getIpv6FirewallConnections(request).map { map ->
+            FirewallConnection(
+                id = map[".id"] ?: "",
+                protocol = map["protocol"] ?: "",
+                srcAddress = map["src-address"] ?: "",
+                dstAddress = map["dst-address"] ?: "",
+                srcPort = map["src-port"] ?: "",
+                dstPort = map["dst-port"] ?: "",
+                replySrcAddress = map["reply-src-address"] ?: "",
+                replyDstAddress = map["reply-dst-address"] ?: "",
+                replySrcPort = map["reply-src-port"] ?: "",
+                replyDstPort = map["reply-dst-port"] ?: "",
+                tcpState = map["tcp-state"] ?: "",
+                timeout = map["timeout"] ?: "",
+                origBytes = map["orig-bytes"] ?: "",
+                replBytes = map["repl-bytes"] ?: "",
+                origPackets = map["orig-packets"] ?: "",
+                replPackets = map["repl-packets"] ?: "",
+                assured = map["assured"] ?: "false",
+                seenReply = map["seen-reply"] ?: "false",
+                fasttrack = map["fasttrack"] ?: "false",
+                connectionMark = map["connection-mark"] ?: ""
+            )
+        }
+    }
 
     // ===== 终端设备（合并）=====
     suspend fun getNetworkDevices(): Result<List<NetworkDevice>> = runCatching {
