@@ -54,29 +54,50 @@ private data class HubEntry(
 )
 
 @Composable
-fun FirewallHubScreen(
+fun Ipv4FirewallHubScreen(
     onNavigateBack: () -> Unit,
     onOpenNatRules: () -> Unit,
     onOpenFilterRules: () -> Unit
 ) {
     HubScreen(
-        title = "防火墙",
-        description = "集中管理 RouterOS 里最关键的防护与放行能力，端口转发只是其中一部分。",
+        title = "IPv4 防火墙",
+        description = "按 RouterOS 官方 IPv4 菜单组织：NAT 负责端口转发与地址转换，Filter 负责 input / forward / output 访问控制。",
         onNavigateBack = onNavigateBack,
         entries = listOf(
             HubEntry(
-                title = "过滤规则",
-                subtitle = "增删改、启停访问控制规则",
+                title = "IPv4 Filter",
+                subtitle = "增删改、启停 IPv4 访问控制规则",
                 icon = Icons.Default.Security,
                 tint = StatusWarning,
                 onClick = onOpenFilterRules
             ),
             HubEntry(
-                title = "NAT 规则",
-                subtitle = "端口转发、地址转换与出站伪装",
+                title = "IPv4 NAT",
+                subtitle = "端口转发、源地址转换与重定向",
                 icon = Icons.Default.SwapHoriz,
                 tint = PrimaryTeal,
                 onClick = onOpenNatRules
+            )
+        )
+    )
+}
+
+@Composable
+fun Ipv6FirewallHubScreen(
+    onNavigateBack: () -> Unit,
+    onOpenFilterRules: () -> Unit
+) {
+    HubScreen(
+        title = "IPv6 防火墙",
+        description = "按 RouterOS 官方 IPv6 菜单组织。当前先交付最核心的 IPv6 Filter 规则管理。",
+        onNavigateBack = onNavigateBack,
+        entries = listOf(
+            HubEntry(
+                title = "IPv6 Filter",
+                subtitle = "增删改、启停 IPv6 input / forward / output 规则",
+                icon = Icons.Default.Security,
+                tint = PrimaryTeal,
+                onClick = onOpenFilterRules
             )
         )
     )

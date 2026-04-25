@@ -18,7 +18,9 @@ import com.routeros.manager.ui.network.detail.DhcpNetworkListScreen
 import com.routeros.manager.ui.network.detail.DhcpServerListScreen
 import com.routeros.manager.ui.network.detail.DnsRecordListScreen
 import com.routeros.manager.ui.network.detail.FilterRuleListScreen
-import com.routeros.manager.ui.network.detail.FirewallHubScreen
+import com.routeros.manager.ui.network.detail.Ipv4FirewallHubScreen
+import com.routeros.manager.ui.network.detail.Ipv6FilterRuleListScreen
+import com.routeros.manager.ui.network.detail.Ipv6FirewallHubScreen
 import com.routeros.manager.ui.network.detail.IpAddressListScreen
 import com.routeros.manager.ui.network.detail.IpManagementScreen
 import com.routeros.manager.ui.network.detail.Ipv6AddressListScreen
@@ -59,11 +61,18 @@ fun RouterOSNavHost(
             SettingsScreen()
         }
 
-        composable(NetworkRoutes.FIREWALL_HUB) {
-            FirewallHubScreen(
+        composable(NetworkRoutes.IPV4_FIREWALL_HUB) {
+            Ipv4FirewallHubScreen(
                 onNavigateBack = popBack,
                 onOpenNatRules = { navController.navigate(NetworkRoutes.NAT_RULES) },
                 onOpenFilterRules = { navController.navigate(NetworkRoutes.FILTER_RULES) }
+            )
+        }
+
+        composable(NetworkRoutes.IPV6_FIREWALL_HUB) {
+            Ipv6FirewallHubScreen(
+                onNavigateBack = popBack,
+                onOpenFilterRules = { navController.navigate(NetworkRoutes.IPV6_FILTER_RULES) }
             )
         }
 
@@ -131,6 +140,10 @@ fun RouterOSNavHost(
 
         composable(NetworkRoutes.FILTER_RULES) {
             FilterRuleListScreen(onNavigateBack = popBack)
+        }
+
+        composable(NetworkRoutes.IPV6_FILTER_RULES) {
+            Ipv6FilterRuleListScreen(onNavigateBack = popBack)
         }
     }
 }

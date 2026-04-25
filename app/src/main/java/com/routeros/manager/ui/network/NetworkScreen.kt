@@ -18,10 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.SettingsEthernet
-import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -41,7 +38,6 @@ import androidx.navigation.NavController
 import com.routeros.manager.ui.navigation.NetworkRoutes
 import com.routeros.manager.ui.theme.PrimaryTeal
 import com.routeros.manager.ui.theme.SecondaryPurple
-import com.routeros.manager.ui.theme.StatusInfo
 import com.routeros.manager.ui.theme.StatusWarning
 
 private data class NetworkQuickAction(
@@ -62,39 +58,31 @@ fun NetworkScreen(
         NetworkQuickAction(
             title = "设备网络配置",
             headline = "从设备直接进入静态绑定与租约定位",
-            supporting = "适合先找到 NAS、打印机、手机，再去改静态绑定、网关 / DNS 所在配置。",
+            supporting = "适合先找到 NAS、打印机、手机，再去改静态绑定和设备保留地址。",
             icon = Icons.Default.Devices,
             tint = PrimaryTeal,
             onClick = { navController.navigate("${NetworkRoutes.DHCP_LEASES_BASE}?query=") }
         ),
         NetworkQuickAction(
-            title = "防火墙 / 端口转发",
-            headline = "NAT 与 Filter 规则集中管理",
-            supporting = "优先承接真实可编辑的防护、放行与端口转发能力",
+            title = "IPv4 防火墙",
+            headline = "按 RouterOS 官方逻辑管理 NAT 与 Filter",
+            supporting = "端口转发、源地址转换、IPv4 input / forward / output 过滤都放这里。",
             icon = Icons.Default.Security,
             tint = StatusWarning,
-            onClick = { navController.navigate(NetworkRoutes.FIREWALL_HUB) }
+            onClick = { navController.navigate(NetworkRoutes.IPV4_FIREWALL_HUB) }
         ),
         NetworkQuickAction(
-            title = "地址分配",
-            headline = "DHCP 租约、网络参数与服务器",
-            supporting = "租约负责设备级静态绑定，DHCP 网络负责网关 / DNS，服务器页处理服务开关与基础配置。",
-            icon = Icons.Default.SettingsEthernet,
-            tint = StatusInfo,
-            onClick = { navController.navigate(NetworkRoutes.ADDRESS_ALLOCATION) }
-        ),
-        NetworkQuickAction(
-            title = "IP 地址",
-            headline = "IPv4 / IPv6 地址管理",
-            supporting = "集中放置已支持真实增删改与启停的地址配置",
-            icon = Icons.Default.Language,
+            title = "IPv6 防火墙",
+            headline = "独立管理 IPv6 Filter 规则",
+            supporting = "按 RouterOS 官方 IPv6 菜单拆开，避免和 IPv4 规则混在一起。",
+            icon = Icons.Default.Security,
             tint = PrimaryTeal,
-            onClick = { navController.navigate(NetworkRoutes.IP_MANAGEMENT) }
+            onClick = { navController.navigate(NetworkRoutes.IPV6_FIREWALL_HUB) }
         ),
         NetworkQuickAction(
             title = "更多网络设置",
             headline = "DNS 与后续网络能力入口",
-            supporting = "DNS 静态记录可编辑；路由、Bridge、VLAN 保留为后续扩展入口",
+            supporting = "DNS 静态记录可编辑；路由、Bridge、VLAN 保留为后续扩展入口。",
             icon = Icons.Default.Dns,
             tint = SecondaryPurple,
             onClick = { navController.navigate(NetworkRoutes.ADVANCED) }
@@ -131,7 +119,7 @@ fun NetworkScreen(
             item {
                 SectionHint(
                     title = "网络配置控制中心",
-                    subtitle = "首页优先放高频任务入口；终端页负责看设备状态，网络页负责真正改配置。"
+                    subtitle = "首页只放高频网络操作：设备网络配置、IPv4 防火墙、IPv6 防火墙和 DNS 等扩展入口。"
                 )
             }
 

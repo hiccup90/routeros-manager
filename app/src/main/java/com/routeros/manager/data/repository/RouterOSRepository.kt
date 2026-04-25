@@ -427,6 +427,34 @@ class RouterOSRepository @Inject constructor(
     suspend fun disableIpv6FirewallFilter(id: String): Result<Unit> = runCatching { api.disableIpv6FirewallFilter(IdRequest(id)) }
     suspend fun enableIpv6FirewallFilter(id: String): Result<Unit> = runCatching { api.enableIpv6FirewallFilter(IdRequest(id)) }
 
+    suspend fun addIpv6FirewallFilter(request: FilterRuleRequest): Result<Ipv6FirewallFilter> = runCatching {
+        val result = api.addIpv6FirewallFilter(request.toMap())
+        Ipv6FirewallFilter(
+            id = result.firstOrNull()?.get(".id") ?: "",
+            chain = request.chain,
+            action = request.action,
+            srcAddress = request.srcAddress ?: "",
+            dstAddress = request.dstAddress ?: "",
+            disabled = "false",
+            comment = request.comment ?: ""
+        )
+    }
+
+    suspend fun editIpv6FirewallFilter(id: String, updates: Map<String, String>): Result<Ipv6FirewallFilter> = runCatching {
+        api.editIpv6FirewallFilter(id, updates)
+        Ipv6FirewallFilter(
+            id = id,
+            chain = updates["chain"] ?: "",
+            action = updates["action"] ?: "",
+            srcAddress = updates["src-address"] ?: "",
+            dstAddress = updates["dst-address"] ?: "",
+            disabled = updates["disabled"] ?: "false",
+            comment = updates["comment"] ?: ""
+        )
+    }
+
+    suspend fun deleteIpv6FirewallFilter(id: String): Result<Unit> = runCatching { api.deleteIpv6FirewallFilter(id) }
+
     // ===== 终端设备（合并）=====
     suspend fun getNetworkDevices(): Result<List<NetworkDevice>> = runCatching {
         val leases = getDhcpLeases().getOrDefault(emptyList())
