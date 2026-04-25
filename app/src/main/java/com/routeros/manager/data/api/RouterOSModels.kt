@@ -105,6 +105,8 @@ data class DhcpLease(
     val hostname: String = "",
     val status: String = "",
     val server: String = "",
+    @SerializedName("address-list") val addressList: String = "",
+    @SerializedName("dhcp-option") val dhcpOption: String = "",
     val expires: String = "",
     @SerializedName("last-seen") val lastSeen: String = "",
     val comment: String = "",

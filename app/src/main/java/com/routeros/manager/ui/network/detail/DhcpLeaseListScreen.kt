@@ -204,6 +204,22 @@ fun DhcpLeaseListScreen(
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
+                                    if (item.addressList.isNotEmpty()) {
+                                        Spacer(Modifier.height(2.dp))
+                                        Text(
+                                            "Address List: ${item.addressList}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    if (item.dhcpOption.isNotEmpty()) {
+                                        Spacer(Modifier.height(2.dp))
+                                        Text(
+                                            "DHCP Options: ${item.dhcpOption}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                     if (item.comment.isNotEmpty()) {
                                         Spacer(Modifier.height(2.dp))
                                         Text(
@@ -247,6 +263,8 @@ fun DhcpLeaseListScreen(
             var comment by rememberSaveable(item.id) { mutableStateOf(item.comment) }
             var address by rememberSaveable(item.id) { mutableStateOf(item.address) }
             var server by rememberSaveable(item.id) { mutableStateOf(item.server) }
+            var addressList by rememberSaveable(item.id) { mutableStateOf(item.addressList) }
+            var dhcpOption by rememberSaveable(item.id) { mutableStateOf(item.dhcpOption) }
             var gateway by rememberSaveable(item.id) { mutableStateOf(uiState.staticBindingGateway) }
             var dnsServer by rememberSaveable(item.id) { mutableStateOf(uiState.staticBindingDnsServer) }
 
@@ -285,6 +303,18 @@ fun DhcpLeaseListScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
                         OutlinedTextField(
+                            value = addressList,
+                            onValueChange = { addressList = it },
+                            label = { Text("Address List") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = dhcpOption,
+                            onValueChange = { dhcpOption = it },
+                            label = { Text("DHCP Options") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
                             value = comment,
                             onValueChange = { comment = it },
                             label = { Text("备注") },
@@ -300,6 +330,8 @@ fun DhcpLeaseListScreen(
                                 comment = comment,
                                 address = address,
                                 server = server,
+                                addressList = addressList,
+                                dhcpOption = dhcpOption,
                                 gateway = gateway,
                                 dnsServer = dnsServer
                             )
@@ -321,6 +353,8 @@ fun DhcpLeaseListScreen(
             var comment by rememberSaveable(item.id) { mutableStateOf(item.comment) }
             var address by rememberSaveable(item.id) { mutableStateOf(item.address) }
             var server by rememberSaveable(item.id) { mutableStateOf(item.server) }
+            var addressList by rememberSaveable(item.id) { mutableStateOf(item.addressList) }
+            var dhcpOption by rememberSaveable(item.id) { mutableStateOf(item.dhcpOption) }
 
             AlertDialog(
                 onDismissRequest = { viewModel.hideEditDialog() },
@@ -340,6 +374,18 @@ fun DhcpLeaseListScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
                         OutlinedTextField(
+                            value = addressList,
+                            onValueChange = { addressList = it },
+                            label = { Text("Address List") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = dhcpOption,
+                            onValueChange = { dhcpOption = it },
+                            label = { Text("DHCP Options") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
                             value = comment,
                             onValueChange = { comment = it },
                             label = { Text("备注") },
@@ -354,7 +400,9 @@ fun DhcpLeaseListScreen(
                                 id = item.id,
                                 comment = comment,
                                 address = address,
-                                server = server
+                                server = server,
+                                addressList = addressList,
+                                dhcpOption = dhcpOption
                             )
                         }
                     ) {

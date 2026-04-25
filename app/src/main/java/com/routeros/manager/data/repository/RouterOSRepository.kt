@@ -148,6 +148,8 @@ class RouterOSRepository @Inject constructor(
                 hostname = map["host-name"] ?: map["hostname"] ?: "",
                 status = map["status"] ?: "",
                 server = map["server"] ?: "",
+                addressList = map["address-list"] ?: "",
+                dhcpOption = map["dhcp-option"] ?: "",
                 expires = map["expires"] ?: "",
                 lastSeen = map["last-seen"] ?: "",
                 comment = map["comment"] ?: "",
@@ -173,6 +175,8 @@ class RouterOSRepository @Inject constructor(
             hostname = map["host-name"] ?: map["hostname"] ?: "",
             status = map["status"] ?: "",
             server = map["server"] ?: updates["server"] ?: "",
+            addressList = map["address-list"] ?: updates["address-list"] ?: "",
+            dhcpOption = map["dhcp-option"] ?: updates["dhcp-option"] ?: "",
             expires = map["expires"] ?: "",
             lastSeen = map["last-seen"] ?: "",
             comment = map["comment"] ?: updates["comment"] ?: "",
@@ -618,6 +622,7 @@ class RouterOSRepository @Inject constructor(
         val leases = getDhcpLeases().getOrDefault(emptyList())
         val arpEntries = getArpEntries().getOrDefault(emptyList())
         val interfaces = getInterfaces().getOrDefault(emptyList())
+        val dhcpServers = getDhcpServers().getOrDefault(emptyList())
         val ipv6Neighbors = getIpv6Neighbors().getOrDefault(emptyList())
 
         data class DeviceAccumulator(
@@ -635,6 +640,7 @@ class RouterOSRepository @Inject constructor(
         )
 
         val interfaceByName = interfaces.associateBy { it.name }
+        val dhcpServerInterfaceByName = dhcpServers.associate { it.name to it.interface_ }
         val deviceMap = linkedMapOf<String, DeviceAccumulator>()
 
         fun normalizeAddress(value: String): String = value.substringBefore("/").trim()
@@ -692,7 +698,9 @@ class RouterOSRepository @Inject constructor(
             sanitize(lease.activeHostName).takeIf { it.isNotEmpty() }?.let(device.hostnames::add)
             sanitize(lease.hostname).takeIf { it.isNotEmpty() }?.let(device.hostnames::add)
             sanitize(lease.macAddress).takeIf { it.isNotEmpty() }?.let { device.macAddresses += normalizeMac(it) }
-            sanitize(lease.server).takeIf { it.isNotEmpty() }?.let(device.interfaces::add)
+            sanitize(lease.server).takeIf { it.isNotEmpty() }?.let { serverName ->
+                device.interfaces += dhcpServerInterfaceByName[serverName] ?: serverName
+            }
             sanitize(lease.status).takeIf { it.isNotEmpty() }?.let(device.statuses::add)
             sanitize(lease.comment).takeIf { it.isNotEmpty() }?.let(device.comments::add)
             sanitize(lease.expires).takeIf { it.isNotEmpty() }?.let { device.expires = it }

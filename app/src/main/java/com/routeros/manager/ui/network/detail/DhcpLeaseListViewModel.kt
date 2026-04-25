@@ -26,6 +26,8 @@ class DhcpLeaseListViewModel @Inject constructor(
         val activeHostName: String,
         val status: String,
         val server: String,
+        val addressList: String,
+        val dhcpOption: String,
         val expires: String,
         val comment: String,
         val isDynamic: Boolean
@@ -117,7 +119,7 @@ class DhcpLeaseListViewModel @Inject constructor(
         }
     }
 
-    fun saveStaticBinding(id: String, comment: String, address: String, server: String, gateway: String, dnsServer: String) {
+    fun saveStaticBinding(id: String, comment: String, address: String, server: String, addressList: String, dhcpOption: String, gateway: String, dnsServer: String) {
         viewModelScope.launch {
             val makeStaticResult = repository.makeDhcpLeaseStatic(id)
             if (makeStaticResult.isFailure) {
@@ -129,6 +131,8 @@ class DhcpLeaseListViewModel @Inject constructor(
                 put("comment", comment)
                 put("address", address)
                 put("server", server)
+                put("address-list", addressList)
+                put("dhcp-option", dhcpOption)
             }
             val editLeaseResult = repository.editDhcpLease(id, leaseUpdates)
             if (editLeaseResult.isFailure) {
@@ -162,12 +166,14 @@ class DhcpLeaseListViewModel @Inject constructor(
         _uiState.update { it.copy(showEditDialog = false, editingItem = null) }
     }
 
-    fun editLease(id: String, comment: String, address: String, server: String) {
+    fun editLease(id: String, comment: String, address: String, server: String, addressList: String, dhcpOption: String) {
         viewModelScope.launch {
             val updates = buildMap {
                 put("comment", comment)
                 put("address", address)
                 put("server", server)
+                put("address-list", addressList)
+                put("dhcp-option", dhcpOption)
             }
             val result = repository.editDhcpLease(id, updates)
             if (result.isSuccess) {
@@ -226,6 +232,8 @@ class DhcpLeaseListViewModel @Inject constructor(
             activeHostName = activeHostName,
             status = status,
             server = server,
+            addressList = addressList,
+            dhcpOption = dhcpOption,
             expires = expires,
             comment = comment,
             isDynamic = dynamic == "true"
