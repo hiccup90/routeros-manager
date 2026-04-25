@@ -176,7 +176,7 @@ fun HomeScreen(
                         }
                     }
 
-                    items(uiState.interfaces) { iface ->
+                    items(uiState.interfaces, key = { it.id.ifBlank { it.name } }) { iface ->
                         InterfaceCard(iface)
                     }
                 }
@@ -195,6 +195,9 @@ fun SystemStatusCard(
     version: String,
     boardName: String
 ) {
+    val cpuLoadPercent = remember(cpuLoad) { cpuLoad.toIntOrNull() ?: 0 }
+    val memoryUsedText = remember(memoryUsed) { formatBytes(memoryUsed) }
+    val memoryTotalText = remember(memoryTotal) { formatBytes(memoryTotal) }
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -219,12 +222,12 @@ fun SystemStatusCard(
                 Text("CPU 负载", style = MaterialTheme.typography.bodyMedium)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     LinearProgressIndicator(
-                        progress = { (cpuLoad.toIntOrNull() ?: 0) / 100f },
+                        progress = { cpuLoadPercent / 100f },
                         modifier = Modifier
                             .width(80.dp)
                             .height(6.dp)
                             .clip(RoundedCornerShape(3.dp)),
-                        color = if ((cpuLoad.toIntOrNull() ?: 0) > 80) StatusError else PrimaryTeal,
+                        color = if (cpuLoadPercent > 80) StatusError else PrimaryTeal,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("$cpuLoad%", style = MaterialTheme.typography.bodySmall)
@@ -247,7 +250,7 @@ fun SystemStatusCard(
                         color = if (memoryPercent > 80) StatusError else PrimaryTeal,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("${formatBytes(memoryUsed)} / ${formatBytes(memoryTotal)}", style = MaterialTheme.typography.bodySmall)
+                    Text("$memoryUsedText / $memoryTotalText", style = MaterialTheme.typography.bodySmall)
                 }
             }
 

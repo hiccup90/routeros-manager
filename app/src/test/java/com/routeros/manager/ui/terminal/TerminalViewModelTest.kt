@@ -75,6 +75,13 @@ class TerminalViewModelTest {
                 listOf("src-address=192.168.88.10", "dst-address=192.168.88.10", "#|")
             )
         }
+        clearViewModel(viewModel)
+    }
+
+    private fun clearViewModel(viewModel: TerminalViewModel) {
+        val method = TerminalViewModel::class.java.getDeclaredMethod("onCleared")
+        method.isAccessible = true
+        method.invoke(viewModel)
     }
 
     private fun networkDevice() = NetworkDevice(

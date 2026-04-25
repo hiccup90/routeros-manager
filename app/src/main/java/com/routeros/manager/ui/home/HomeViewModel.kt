@@ -59,8 +59,9 @@ class HomeViewModel @Inject constructor(
     )
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    private var previousInterfaceBytes: Map<String, Pair<Long, Long>> = emptyMap()
+    private var previousInterfaceBytes: MutableMap<String, Pair<Long, Long>> = mutableMapOf()
     private var pollingJob: Job? = null
+    private var refreshJob: Job? = null
 
     init {
         ensurePollingState()
@@ -88,7 +89,8 @@ class HomeViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = false, error = "请先在设置中配置连接", isConnected = false) }
             return
         }
-        viewModelScope.launch {
+        if (refreshJob?.isActive == true) return
+        refreshJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             val results = withTimeoutOrNull(10_000) {
@@ -182,7 +184,7 @@ class HomeViewModel @Inject constructor(
             val rxDiff = if (prev != null) rxCurrent - prev.first else 0L
             val txDiff = if (prev != null) txCurrent - prev.second else 0L
 
-            previousInterfaceBytes = previousInterfaceBytes + (iface.name to Pair(rxCurrent, txCurrent))
+            previousInterfaceBytes[iface.name] = rxCurrent to txCurrent
 
             InterfaceUiModel(
                 id = iface.id,
@@ -224,6 +226,7 @@ class HomeViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
+        refreshJob?.cancel()
         stopPolling()
     }
 }

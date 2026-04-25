@@ -24,6 +24,8 @@ private const val DEVICE_TRAFFIC_REFRESH_MS = 5000L
 data class TerminalDeviceUiModel(
     val key: String,
     val searchKey: String,
+    val displayNameKey: String,
+    val primaryAddressKey: String,
     val displayName: String,
     val primaryAddress: String,
     val ipv4Addresses: List<String>,
@@ -382,8 +384,8 @@ class TerminalViewModel @Inject constructor(
             }
             .sortedWith(
                 compareByDescending<TerminalDeviceUiModel> { it.isOnline }
-                    .thenBy { it.displayName.lowercase() }
-                    .thenBy { it.primaryAddress.lowercase() }
+                    .thenBy { it.displayNameKey }
+                    .thenBy { it.primaryAddressKey }
             )
             .toList()
     }
@@ -401,6 +403,8 @@ class TerminalViewModel @Inject constructor(
                 }
             }
         }
+        val normalizedDisplayName = resolvedDisplayName.lowercase()
+        val normalizedPrimaryAddress = primaryAddress.ifBlank { "--" }.lowercase()
         return TerminalDeviceUiModel(
             key = key,
             searchKey = buildString {
@@ -426,6 +430,8 @@ class TerminalViewModel @Inject constructor(
                     append(it)
                 }
             }.lowercase(),
+            displayNameKey = normalizedDisplayName,
+            primaryAddressKey = normalizedPrimaryAddress,
             displayName = resolvedDisplayName,
             primaryAddress = primaryAddress.ifBlank { "--" },
             ipv4Addresses = ipv4Addresses,

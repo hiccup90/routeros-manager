@@ -51,6 +51,15 @@ class RouterOSRepository @Inject constructor(
     fun isConfigured(): Boolean =
         securePreferences.host.isNotEmpty() && securePreferences.username.isNotEmpty()
 
+    private fun printRequest(
+        props: List<String>? = null,
+        query: List<String>? = null
+    ): PrintRequest = PrintRequest(
+        proplist = props,
+        query = query,
+        withoutPaging = ""
+    )
+
     // ===== 系统 =====
     suspend fun getSystemIdentity(): Result<SystemIdentity> = runCatching {
         val list = api.getSystemIdentity()
@@ -80,7 +89,7 @@ class RouterOSRepository @Inject constructor(
 
     // ===== 接口 =====
     suspend fun getInterfaces(props: List<String>? = null): Result<List<InterfaceItem>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getInterfaces(request).map { map ->
             InterfaceItem(
                 id = map[".id"] ?: "",
@@ -112,7 +121,7 @@ class RouterOSRepository @Inject constructor(
 
     // ===== IP 地址 =====
     suspend fun getIpAddresses(props: List<String>? = null): Result<List<IpAddress>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getIpAddresses(request).map { IpAddress.fromMap(it) }
     }
 
@@ -133,13 +142,13 @@ class RouterOSRepository @Inject constructor(
 
     // ===== ARP =====
     suspend fun getArpEntries(props: List<String>? = null): Result<List<ArpEntry>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getArpEntries(request).map { ArpEntry.fromMap(it) }
     }
 
     // ===== DHCP Lease =====
     suspend fun getDhcpLeases(props: List<String>? = null): Result<List<DhcpLease>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getDhcpLeases(request).map { map ->
             DhcpLease(
                 id = map[".id"] ?: "",
@@ -189,7 +198,7 @@ class RouterOSRepository @Inject constructor(
 
     // ===== DHCP Client =====
     suspend fun getDhcpClients(props: List<String>? = null): Result<List<DhcpClient>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getDhcpClients(request).map { DhcpClient.fromMap(it) }
     }
 
@@ -198,12 +207,12 @@ class RouterOSRepository @Inject constructor(
 
     // ===== DHCP Server =====
     suspend fun getDhcpServers(props: List<String>? = null): Result<List<DhcpServer>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getDhcpServers(request).map { DhcpServer.fromMap(it) }
     }
 
     suspend fun getDhcpNetworks(props: List<String>? = null): Result<List<DhcpNetwork>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getDhcpNetworks(request).map { DhcpNetwork.fromMap(it) }
     }
 
@@ -224,7 +233,7 @@ class RouterOSRepository @Inject constructor(
 
     // ===== DNS =====
     suspend fun getIpDnsSettings(props: List<String>? = null): Result<IpDnsSettings> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         val map = api.getIpDnsSettings(request).firstOrNull().orEmpty()
         IpDnsSettings(
             servers = map["servers"] ?: "",
@@ -238,7 +247,7 @@ class RouterOSRepository @Inject constructor(
     }
 
     suspend fun getDnsRecords(props: List<String>? = null): Result<List<DnsRecord>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getDnsRecords(request).map { map ->
             DnsRecord(
                 id = map[".id"] ?: "",
@@ -280,7 +289,7 @@ class RouterOSRepository @Inject constructor(
 
     // ===== NAT =====
     suspend fun getNatRules(props: List<String>? = null): Result<List<NatRule>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getNatRules(request).map { map ->
             NatRule(
                 id = map[".id"] ?: "",
@@ -336,7 +345,7 @@ class RouterOSRepository @Inject constructor(
 
     // ===== 过滤规则 =====
     suspend fun getFirewallFilters(props: List<String>? = null): Result<List<FirewallFilter>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getFirewallFilters(request).map { map ->
             FirewallFilter(
                 id = map[".id"] ?: "",
@@ -385,7 +394,7 @@ class RouterOSRepository @Inject constructor(
     suspend fun deleteFirewallFilter(id: String): Result<Unit> = runCatching { api.deleteFirewallFilter(id) }
 
     suspend fun getFirewallAddressLists(props: List<String>? = null): Result<List<FirewallAddressList>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getFirewallAddressLists(request).map { map ->
             FirewallAddressList(
                 id = map[".id"] ?: "",
@@ -437,7 +446,7 @@ class RouterOSRepository @Inject constructor(
         props: List<String>? = null,
         query: List<String>? = null
     ): Result<List<FirewallConnection>> = runCatching {
-        val request = PrintRequest(proplist = props, query = query, withoutPaging = "")
+        val request = printRequest(props = props, query = query)
         api.getFirewallConnections(request).map { map ->
             FirewallConnection(
                 id = map[".id"] ?: "",
@@ -468,12 +477,12 @@ class RouterOSRepository @Inject constructor(
 
     // ===== IPv6 =====
     suspend fun getIpv6Addresses(props: List<String>? = null): Result<List<Ipv6Address>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getIpv6Addresses(request).map { Ipv6Address.fromMap(it) }
     }
 
     suspend fun getIpv6Neighbors(props: List<String>? = null): Result<List<Ipv6Neighbor>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getIpv6Neighbors(request).map { Ipv6Neighbor.fromMap(it) }
     }
 
@@ -497,7 +506,7 @@ class RouterOSRepository @Inject constructor(
 
     // IPv6 DHCP Client
     suspend fun getIpv6DhcpClients(props: List<String>? = null): Result<List<Ipv6DhcpClient>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getIpv6DhcpClients(request).map { Ipv6DhcpClient.fromMap(it) }
     }
 
@@ -506,7 +515,7 @@ class RouterOSRepository @Inject constructor(
 
     // IPv6 DHCP Server
     suspend fun getIpv6DhcpServers(props: List<String>? = null): Result<List<Ipv6DhcpServer>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getIpv6DhcpServers(request).map { Ipv6DhcpServer.fromMap(it) }
     }
 
@@ -515,7 +524,7 @@ class RouterOSRepository @Inject constructor(
 
     // IPv6 防火墙
     suspend fun getIpv6FirewallFilters(props: List<String>? = null): Result<List<Ipv6FirewallFilter>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getIpv6FirewallFilters(request).map { map ->
             Ipv6FirewallFilter(
                 id = map[".id"] ?: "",
@@ -561,7 +570,7 @@ class RouterOSRepository @Inject constructor(
     suspend fun deleteIpv6FirewallFilter(id: String): Result<Unit> = runCatching { api.deleteIpv6FirewallFilter(id) }
 
     suspend fun getIpv6FirewallAddressLists(props: List<String>? = null): Result<List<Ipv6FirewallAddressList>> = runCatching {
-        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val request = printRequest(props = props)
         api.getIpv6FirewallAddressLists(request).map { map ->
             Ipv6FirewallAddressList(
                 id = map[".id"] ?: "",
@@ -613,7 +622,7 @@ class RouterOSRepository @Inject constructor(
         props: List<String>? = null,
         query: List<String>? = null
     ): Result<List<FirewallConnection>> = runCatching {
-        val request = PrintRequest(proplist = props, query = query, withoutPaging = "")
+        val request = printRequest(props = props, query = query)
         api.getIpv6FirewallConnections(request).map { map ->
             FirewallConnection(
                 id = map[".id"] ?: "",

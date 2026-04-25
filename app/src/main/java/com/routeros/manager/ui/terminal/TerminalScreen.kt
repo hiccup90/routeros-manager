@@ -50,7 +50,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,7 +74,14 @@ fun TerminalScreen(
     onOpenNetworkConfig: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val expandedMap = remember { mutableStateMapOf<String, Boolean>() }
+    val expandedMap = rememberSaveable(
+        saver = androidx.compose.runtime.saveable.mapSaver(
+            save = { state -> state.toMap() },
+            restore = { restored -> mutableStateMapOf<String, Boolean>().apply { restored.forEach { (key, value) -> this[key] = value as Boolean } } }
+        )
+    ) {
+        mutableStateMapOf<String, Boolean>()
+    }
 
     Scaffold(
         topBar = {
