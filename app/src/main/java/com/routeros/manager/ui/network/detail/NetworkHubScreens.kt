@@ -59,25 +59,19 @@ fun Ipv4FirewallHubScreen(
     onOpenFilterRules: () -> Unit,
     onOpenNatRules: () -> Unit,
     onOpenMangle: () -> Unit,
-    onOpenRaw: () -> Unit,
-    onOpenServicePorts: () -> Unit,
     onOpenConnections: () -> Unit,
-    onOpenAddressLists: () -> Unit,
-    onOpenLayer7: () -> Unit
+    onOpenAddressLists: () -> Unit
 ) {
     HubScreen(
         title = "IPv4 防火墙",
-        description = "按 RouterOS / WinBox 官方结构补齐 IPv4 firewall：Filter、NAT、Mangle、Raw、Service Ports、Connections、Address Lists、Layer7。",
+        description = "保留高频 IPv4 防火墙能力：Filter、NAT、Address Lists、Mangle、连接统计。",
         onNavigateBack = onNavigateBack,
         entries = listOf(
             HubEntry("Filter", "增删改、启停 IPv4 访问控制规则", Icons.Default.Security, StatusWarning, onOpenFilterRules),
             HubEntry("NAT", "端口转发、源地址转换与重定向", Icons.Default.SwapHoriz, PrimaryTeal, onOpenNatRules),
-            HubEntry("Mangle", "连接标记、路由标记、报文标记", Icons.Default.Hub, SecondaryPurple, onOpenMangle),
-            HubEntry("Raw", "连接跟踪前的快速匹配与丢弃", Icons.Default.Hub, StatusInfo, onOpenRaw),
-            HubEntry("Service Ports", "ALG / 协议辅助模块开关", Icons.Default.SettingsEthernet, PrimaryTeal, onOpenServicePorts),
-            HubEntry("Connections", "查看当前连接跟踪表", Icons.AutoMirrored.Filled.List, SecondaryPurple, onOpenConnections),
             HubEntry("Address Lists", "维护防火墙地址列表", Icons.Default.Dns, StatusWarning, onOpenAddressLists),
-            HubEntry("Layer7", "L7 正则匹配规则", Icons.Default.Language, StatusInfo, onOpenLayer7)
+            HubEntry("Mangle", "连接标记、路由标记、报文标记", Icons.Default.Hub, SecondaryPurple, onOpenMangle),
+            HubEntry("连接统计", "查看总连接数、TCP / UDP、已建立连接", Icons.AutoMirrored.Filled.List, SecondaryPurple, onOpenConnections)
         )
     )
 }
@@ -87,20 +81,18 @@ fun Ipv6FirewallHubScreen(
     onNavigateBack: () -> Unit,
     onOpenFilterRules: () -> Unit,
     onOpenMangle: () -> Unit,
-    onOpenRaw: () -> Unit,
     onOpenConnections: () -> Unit,
     onOpenAddressLists: () -> Unit
 ) {
     HubScreen(
         title = "IPv6 防火墙",
-        description = "按 RouterOS / WinBox 官方结构补齐 IPv6 firewall：Filter、Mangle、Raw、Connections、Address Lists。",
+        description = "保留高频 IPv6 防火墙能力：Filter、Address Lists、Mangle、连接统计。",
         onNavigateBack = onNavigateBack,
         entries = listOf(
             HubEntry("Filter", "增删改、启停 IPv6 input / forward / output 规则", Icons.Default.Security, PrimaryTeal, onOpenFilterRules),
+            HubEntry("Address Lists", "维护 IPv6 防火墙地址列表", Icons.Default.Dns, StatusWarning, onOpenAddressLists),
             HubEntry("Mangle", "IPv6 报文与连接标记规则", Icons.Default.Hub, SecondaryPurple, onOpenMangle),
-            HubEntry("Raw", "IPv6 连接跟踪前的快速匹配与丢弃", Icons.Default.Hub, StatusInfo, onOpenRaw),
-            HubEntry("Connections", "查看 IPv6 连接跟踪表", Icons.AutoMirrored.Filled.List, SecondaryPurple, onOpenConnections),
-            HubEntry("Address Lists", "维护 IPv6 防火墙地址列表", Icons.Default.Dns, StatusWarning, onOpenAddressLists)
+            HubEntry("连接统计", "查看总连接数、TCP / UDP、已建立连接", Icons.AutoMirrored.Filled.List, SecondaryPurple, onOpenConnections)
         )
     )
 }

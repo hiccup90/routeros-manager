@@ -72,11 +72,8 @@ fun RouterOSNavHost(
                 onOpenFilterRules = { navController.navigate(NetworkRoutes.FILTER_RULES) },
                 onOpenNatRules = { navController.navigate(NetworkRoutes.NAT_RULES) },
                 onOpenMangle = { navController.navigate(NetworkRoutes.IPV4_MANGLE) },
-                onOpenRaw = { navController.navigate(NetworkRoutes.IPV4_RAW) },
-                onOpenServicePorts = { navController.navigate(NetworkRoutes.IPV4_SERVICE_PORTS) },
                 onOpenConnections = { navController.navigate(NetworkRoutes.IPV4_CONNECTIONS) },
-                onOpenAddressLists = { navController.navigate(NetworkRoutes.IPV4_ADDRESS_LISTS) },
-                onOpenLayer7 = { navController.navigate(NetworkRoutes.IPV4_LAYER7) }
+                onOpenAddressLists = { navController.navigate(NetworkRoutes.IPV4_ADDRESS_LISTS) }
             )
         }
 
@@ -85,7 +82,6 @@ fun RouterOSNavHost(
                 onNavigateBack = popBack,
                 onOpenFilterRules = { navController.navigate(NetworkRoutes.IPV6_FILTER_RULES) },
                 onOpenMangle = { navController.navigate(NetworkRoutes.IPV6_MANGLE) },
-                onOpenRaw = { navController.navigate(NetworkRoutes.IPV6_RAW) },
                 onOpenConnections = { navController.navigate(NetworkRoutes.IPV6_CONNECTIONS) },
                 onOpenAddressLists = { navController.navigate(NetworkRoutes.IPV6_ADDRESS_LISTS) }
             )

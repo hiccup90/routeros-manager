@@ -4,24 +4,20 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -50,7 +46,7 @@ fun FirewallConnectionListScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("IPv4 Connections") },
+                title = { Text("IPv4 连接统计") },
                 navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") } },
                 actions = { IconButton(onClick = { viewModel.loadData() }) { Icon(Icons.Default.Refresh, "刷新") } },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
@@ -59,35 +55,42 @@ fun FirewallConnectionListScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding).background(MaterialTheme.colorScheme.background)) {
-            when {
-                uiState.isLoading && uiState.items.isEmpty() -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-                uiState.items.isEmpty() -> Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Text("暂无 IPv4 连接", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                else -> Column(modifier = Modifier.fillMaxSize()) {
-                    OutlinedTextField(
-                        value = uiState.query,
-                        onValueChange = viewModel::updateQuery,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                        singleLine = true,
-                        label = { Text("筛选协议 / 地址 / 端口 / 状态") }
-                    )
-                    LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(uiState.filteredItems, key = { it.id }) { item ->
-                            Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Text("${item.protocol.ifBlank { "?" }} ${item.srcAddress}${item.srcPort.takeIf { it.isNotBlank() }?.let { ":$it" } ?: ""} → ${item.dstAddress}${item.dstPort.takeIf { it.isNotBlank() }?.let { ":$it" } ?: ""}", style = MaterialTheme.typography.bodyMedium)
-                                    val reply = listOfNotNull(item.replySrcAddress.ifBlank { null }, item.replyDstAddress.ifBlank { null }).joinToString(" ← ")
-                                    if (reply.isNotEmpty()) Text(reply, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    val meta = listOfNotNull(item.tcpState.ifBlank { null }, item.timeout.ifBlank { null }, item.connectionMark.ifBlank { null }).joinToString(" | ")
-                                    if (meta.isNotEmpty()) Text(meta, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    Text("bytes ${item.origBytes}/${item.replBytes} | packets ${item.origPackets}/${item.replPackets}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                            }
+            if (uiState.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            } else {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    SummaryCard(title = "当前总连接数", value = uiState.summary.total.toString(), subtitle = "当前活跃 IPv4 连接总量")
+                    SummaryCard(title = "TCP 连接", value = uiState.summary.tcp.toString(), subtitle = "协议 = TCP")
+                    SummaryCard(title = "UDP 连接", value = uiState.summary.udp.toString(), subtitle = "协议 = UDP")
+                    SummaryCard(title = "已建立连接", value = uiState.summary.established.toString(), subtitle = "tcp-state = established")
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.58f))
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text("最近刷新", style = MaterialTheme.typography.titleSmall)
+                            Text(uiState.summary.lastRefreshedAt.ifBlank { "-" }, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SummaryCard(title: String, value: String, subtitle: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.82f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(value, style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
