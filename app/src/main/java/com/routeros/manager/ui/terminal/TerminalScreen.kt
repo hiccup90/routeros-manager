@@ -325,7 +325,11 @@ private fun DeviceCard(
                         DetailLine("MAC", device.macAddress)
                         DetailLine("IPv6", device.ipv6Display)
                         DetailLine("接口", device.interfaceDisplay)
-                        TrafficLine(rxRate = device.rxRate, txRate = device.txRate)
+                        TrafficLine(
+                            rxRate = device.interfaceRxRate,
+                            txRate = device.interfaceTxRate
+                        )
+                        DetailLine("说明", "这里显示的是接口总流量，不是单台设备独享流量")
                         if (device.hostname.isNotBlank() && device.hostname != device.displayName) {
                             DetailLine("主机名", device.hostname)
                         }
@@ -371,7 +375,7 @@ private fun TrafficLine(rxRate: String, txRate: String) {
             color = PrimaryTeal.copy(alpha = 0.12f)
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
-                Text("下载", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("接口下载", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(rxRate, style = MaterialTheme.typography.bodyMedium, color = PrimaryTealLight, fontWeight = FontWeight.Medium)
             }
         }
@@ -381,7 +385,7 @@ private fun TrafficLine(rxRate: String, txRate: String) {
             color = SecondaryPurple.copy(alpha = 0.12f)
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
-                Text("上传", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("接口上传", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(txRate, style = MaterialTheme.typography.bodyMedium, color = SecondaryPurple, fontWeight = FontWeight.Medium)
             }
         }
