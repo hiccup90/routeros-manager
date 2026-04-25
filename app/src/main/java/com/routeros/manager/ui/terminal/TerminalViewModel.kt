@@ -31,7 +31,8 @@ data class TerminalDeviceUiModel(
     val sources: List<String>,
     val hostname: String,
     val inferredName: String,
-    val comment: String
+    val comment: String,
+    val isOnline: Boolean
 )
 
 private data class TerminalContentState(
@@ -42,6 +43,7 @@ private data class TerminalContentState(
 data class TerminalUiState(
     val devices: List<TerminalDeviceUiModel> = emptyList(),
     val query: String = "",
+    val showOnlineOnly: Boolean = false,
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val error: String? = null,
@@ -81,7 +83,24 @@ class TerminalViewModel @Inject constructor(
         _uiState.update { current ->
             current.copy(
                 query = query,
-                devices = filterDevices(contentState.value.devices, query)
+                devices = buildVisibleDevices(
+                    devices = contentState.value.devices,
+                    query = query,
+                    showOnlineOnly = current.showOnlineOnly
+                )
+            )
+        }
+    }
+
+    fun setShowOnlineOnly(showOnlineOnly: Boolean) {
+        _uiState.update { current ->
+            current.copy(
+                showOnlineOnly = showOnlineOnly,
+                devices = buildVisibleDevices(
+                    devices = contentState.value.devices,
+                    query = current.query,
+                    showOnlineOnly = showOnlineOnly
+                )
             )
         }
     }
@@ -130,7 +149,11 @@ class TerminalViewModel @Inject constructor(
             if (devicesResult.isFailure) {
                 _uiState.update { current ->
                     current.copy(
-                        devices = filterDevices(contentState.value.devices, current.query),
+                        devices = buildVisibleDevices(
+                            devices = contentState.value.devices,
+                            query = current.query,
+                            showOnlineOnly = current.showOnlineOnly
+                        ),
                         isLoading = false,
                         isRefreshing = false,
                         error = devicesResult.exceptionOrNull()?.message ?: "加载设备失败"
@@ -150,7 +173,11 @@ class TerminalViewModel @Inject constructor(
             )
             _uiState.update { current ->
                 current.copy(
-                    devices = filterDevices(uiModels, current.query),
+                    devices = buildVisibleDevices(
+                        devices = uiModels,
+                        query = current.query,
+                        showOnlineOnly = current.showOnlineOnly
+                    ),
                     isLoading = false,
                     isRefreshing = false,
                     isConfigured = true,
@@ -176,23 +203,36 @@ class TerminalViewModel @Inject constructor(
         }
     }
 
-    private fun filterDevices(devices: List<TerminalDeviceUiModel>, query: String): List<TerminalDeviceUiModel> {
+    private fun buildVisibleDevices(
+        devices: List<TerminalDeviceUiModel>,
+        query: String,
+        showOnlineOnly: Boolean
+    ): List<TerminalDeviceUiModel> {
         val keyword = query.trim().lowercase()
-        if (keyword.isEmpty()) return devices
-        return devices.filter { device ->
-            buildList {
-                add(device.displayName)
-                add(device.primaryAddress)
-                add(device.macAddress)
-                add(device.ipv6Display)
-                add(device.interfaceDisplay)
-                add(device.status)
-                add(device.hostname)
-                add(device.inferredName)
-                add(device.comment)
-                addAll(device.sources)
-            }.any { candidate -> candidate.lowercase().contains(keyword) }
-        }
+        return devices
+            .asSequence()
+            .filter { device -> !showOnlineOnly || device.isOnline }
+            .filter { device ->
+                if (keyword.isEmpty()) return@filter true
+                buildList {
+                    add(device.displayName)
+                    add(device.primaryAddress)
+                    add(device.macAddress)
+                    add(device.ipv6Display)
+                    add(device.interfaceDisplay)
+                    add(device.status)
+                    add(device.hostname)
+                    add(device.inferredName)
+                    add(device.comment)
+                    addAll(device.sources)
+                }.any { candidate -> candidate.lowercase().contains(keyword) }
+            }
+            .sortedWith(
+                compareByDescending<TerminalDeviceUiModel> { it.isOnline }
+                    .thenBy { it.displayName.lowercase() }
+                    .thenBy { it.primaryAddress.lowercase() }
+            )
+            .toList()
     }
 
     private fun NetworkDevice.toUiModel(rate: InterfaceRate?): TerminalDeviceUiModel {
@@ -223,7 +263,8 @@ class TerminalViewModel @Inject constructor(
             sources = sources,
             hostname = hostname,
             inferredName = inferredName,
-            comment = comment
+            comment = comment,
+            isOnline = isOnlineStatus(status)
         )
     }
 
@@ -235,6 +276,11 @@ class TerminalViewModel @Inject constructor(
             bytesPerSec < 1024 * 1024 * 1024 -> String.format("%.2f MB/s", bytesPerSec / (1024.0 * 1024))
             else -> String.format("%.2f GB/s", bytesPerSec / (1024.0 * 1024 * 1024))
         }
+    }
+
+    private fun isOnlineStatus(status: String): Boolean {
+        return status.contains("bound", ignoreCase = true) ||
+            status.contains("complete", ignoreCase = true)
     }
 
     override fun onCleared() {

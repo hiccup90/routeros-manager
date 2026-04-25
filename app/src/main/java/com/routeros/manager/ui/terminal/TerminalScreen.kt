@@ -41,6 +41,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -102,9 +104,32 @@ fun TerminalScreen(
             SummaryCard(
                 deviceCount = uiState.devices.size,
                 query = uiState.query,
+                showOnlineOnly = uiState.showOnlineOnly,
                 isRefreshing = uiState.isRefreshing,
                 lastUpdatedAt = uiState.lastUpdatedAt
             )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = !uiState.showOnlineOnly,
+                    onClick = { viewModel.setShowOnlineOnly(false) },
+                    label = { Text("全部设备") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = PrimaryTeal.copy(alpha = 0.18f)
+                    )
+                )
+                FilterChip(
+                    selected = uiState.showOnlineOnly,
+                    onClick = { viewModel.setShowOnlineOnly(true) },
+                    label = { Text("仅在线") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = StatusSuccess.copy(alpha = 0.18f)
+                    )
+                )
+            }
 
             OutlinedTextField(
                 value = uiState.query,
@@ -185,6 +210,7 @@ fun TerminalScreen(
 private fun SummaryCard(
     deviceCount: Int,
     query: String,
+    showOnlineOnly: Boolean,
     isRefreshing: Boolean,
     lastUpdatedAt: Long?
 ) {
@@ -211,7 +237,10 @@ private fun SummaryCard(
                 }
             }
             Text(
-                text = if (query.isBlank()) "共 $deviceCount 台设备" else "筛选后 $deviceCount 台设备",
+                text = buildString {
+                    append(if (query.isBlank()) "共 $deviceCount 台设备" else "筛选后 $deviceCount 台设备")
+                    append(if (showOnlineOnly) " · 仅在线" else " · 全部")
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
