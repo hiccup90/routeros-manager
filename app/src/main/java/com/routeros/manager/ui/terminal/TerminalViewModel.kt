@@ -23,6 +23,7 @@ private const val DEVICE_TRAFFIC_REFRESH_MS = 5000L
 
 data class TerminalDeviceUiModel(
     val key: String,
+    val searchKey: String,
     val displayName: String,
     val primaryAddress: String,
     val ipv4Addresses: List<String>,
@@ -79,6 +80,7 @@ class TerminalViewModel @Inject constructor(
 
     private var pollingJob: Job? = null
     private val trafficPollingJobs = mutableMapOf<String, Job>()
+    private val expandedDeviceKeys = mutableSetOf<String>()
 
     init {
         if (repository.isConfigured()) {
@@ -126,8 +128,10 @@ class TerminalViewModel @Inject constructor(
 
     fun setDeviceExpanded(deviceKey: String, expanded: Boolean) {
         if (expanded) {
+            expandedDeviceKeys += deviceKey
             startTrafficPolling(deviceKey)
         } else {
+            expandedDeviceKeys -= deviceKey
             stopTrafficPolling(deviceKey)
         }
     }
@@ -193,6 +197,7 @@ class TerminalViewModel @Inject constructor(
                 devices = uiModels,
                 lastUpdatedAt = updatedAt
             )
+            syncExpandedTrafficPolling(uiModels)
             _uiState.update { current ->
                 current.copy(
                     devices = buildVisibleDevices(
@@ -223,6 +228,23 @@ class TerminalViewModel @Inject constructor(
 
     private fun stopTrafficPolling(deviceKey: String) {
         trafficPollingJobs.remove(deviceKey)?.cancel()
+    }
+
+    private fun syncExpandedTrafficPolling(devices: List<TerminalDeviceUiModel>) {
+        val availableKeys = devices.mapTo(mutableSetOf()) { it.key }
+        val iterator = expandedDeviceKeys.iterator()
+        while (iterator.hasNext()) {
+            val key = iterator.next()
+            if (key !in availableKeys) {
+                stopTrafficPolling(key)
+                iterator.remove()
+            }
+        }
+        expandedDeviceKeys.forEach { key ->
+            if (key in availableKeys) {
+                startTrafficPolling(key)
+            }
+        }
     }
 
     private suspend fun refreshDeviceTraffic(deviceKey: String, showLoading: Boolean) {
@@ -356,18 +378,7 @@ class TerminalViewModel @Inject constructor(
             .filter { device -> !showOnlineOnly || device.isOnline }
             .filter { device ->
                 if (keyword.isEmpty()) return@filter true
-                buildList {
-                    add(device.displayName)
-                    add(device.primaryAddress)
-                    add(device.macAddress)
-                    add(device.ipv6Display)
-                    add(device.interfaceDisplay)
-                    add(device.status)
-                    add(device.hostname)
-                    add(device.inferredName)
-                    add(device.comment)
-                    addAll(device.sources)
-                }.any { candidate -> candidate.lowercase().contains(keyword) }
+                device.searchKey.contains(keyword)
             }
             .sortedWith(
                 compareByDescending<TerminalDeviceUiModel> { it.isOnline }
@@ -392,6 +403,29 @@ class TerminalViewModel @Inject constructor(
         }
         return TerminalDeviceUiModel(
             key = key,
+            searchKey = buildString {
+                append(resolvedDisplayName)
+                append('\n')
+                append(primaryAddress)
+                append('\n')
+                append(macAddress)
+                append('\n')
+                append(ipv6Value)
+                append('\n')
+                append(interfaceValue)
+                append('\n')
+                append(status)
+                append('\n')
+                append(hostname)
+                append('\n')
+                append(inferredName)
+                append('\n')
+                append(comment)
+                sources.forEach {
+                    append('\n')
+                    append(it)
+                }
+            }.lowercase(),
             displayName = resolvedDisplayName,
             primaryAddress = primaryAddress.ifBlank { "--" },
             ipv4Addresses = ipv4Addresses,

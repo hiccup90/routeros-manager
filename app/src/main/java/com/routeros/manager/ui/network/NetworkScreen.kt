@@ -80,12 +80,12 @@ fun NetworkScreen(
             onClick = { navController.navigate(NetworkRoutes.IPV6_FIREWALL_HUB) }
         ),
         NetworkQuickAction(
-            title = "更多网络设置",
-            headline = "DNS 与后续网络能力入口",
-            supporting = "DNS 静态记录可编辑；路由、Bridge、VLAN 保留为后续扩展入口。",
+            title = "DNS 设置",
+            headline = "查看 IP-DNS 服务器、缓存与解析能力",
+            supporting = "对应 WinBox 的 IP-DNS；集中展示上游 DNS、缓存占用和静态记录入口。",
             icon = Icons.Default.Dns,
             tint = SecondaryPurple,
-            onClick = { navController.navigate(NetworkRoutes.ADVANCED) }
+            onClick = { navController.navigate(NetworkRoutes.DNS_SETTINGS) }
         )
     )
 
@@ -119,7 +119,7 @@ fun NetworkScreen(
             item {
                 SectionHint(
                     title = "网络配置控制中心",
-                    subtitle = "首页只放高频网络操作：设备网络配置、IPv4 防火墙、IPv6 防火墙和 DNS 等扩展入口。"
+                    subtitle = "首页只放高频网络操作：设备网络配置、IPv4 防火墙、IPv6 防火墙和 DNS 设置。"
                 )
             }
 

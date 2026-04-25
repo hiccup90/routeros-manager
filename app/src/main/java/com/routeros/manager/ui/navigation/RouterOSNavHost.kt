@@ -11,7 +11,6 @@ import androidx.navigation.navArgument
 import com.routeros.manager.ui.home.HomeScreen
 import com.routeros.manager.ui.network.NetworkScreen
 import com.routeros.manager.ui.network.detail.AddressAllocationScreen
-import com.routeros.manager.ui.network.detail.AdvancedNetworkScreen
 import com.routeros.manager.ui.network.detail.DhcpClientListScreen
 import com.routeros.manager.ui.network.detail.DhcpLeaseListScreen
 import com.routeros.manager.ui.network.detail.DhcpNetworkListScreen
@@ -29,6 +28,7 @@ import com.routeros.manager.ui.network.detail.Ipv6FirewallHubScreen
 import com.routeros.manager.ui.network.detail.IpAddressListScreen
 import com.routeros.manager.ui.network.detail.IpManagementScreen
 import com.routeros.manager.ui.network.detail.Ipv6AddressListScreen
+import com.routeros.manager.ui.network.detail.IpDnsSettingsScreen
 import com.routeros.manager.ui.network.detail.NatRuleListScreen
 import com.routeros.manager.ui.settings.SettingsScreen
 import com.routeros.manager.ui.terminal.TerminalScreen
@@ -142,10 +142,10 @@ fun RouterOSNavHost(
             NatRuleListScreen(onNavigateBack = popBack)
         }
 
-        composable(NetworkRoutes.ADVANCED) {
-            AdvancedNetworkScreen(
+        composable(NetworkRoutes.DNS_SETTINGS) {
+            IpDnsSettingsScreen(
                 onNavigateBack = popBack,
-                onOpenDns = { navController.navigate(NetworkRoutes.DNS_RECORDS) }
+                onOpenDnsRecords = { navController.navigate(NetworkRoutes.DNS_RECORDS) }
             )
         }
 

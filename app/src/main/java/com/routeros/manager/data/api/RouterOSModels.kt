@@ -193,6 +193,16 @@ data class DnsRecord(
     val comment: String = ""
 )
 
+data class IpDnsSettings(
+    val servers: String = "",
+    @SerializedName("dynamic-servers") val dynamicServers: String = "",
+    @SerializedName("allow-remote-requests") val allowRemoteRequests: String = "false",
+    @SerializedName("cache-size") val cacheSize: String = "",
+    @SerializedName("cache-used") val cacheUsed: String = "",
+    @SerializedName("max-concurrent-queries") val maxConcurrentQueries: String = "",
+    @SerializedName("max-concurrent-tcp-sessions") val maxConcurrentTcpSessions: String = ""
+)
+
 // ARP
 data class ArpEntry(
     @SerializedName(".id") val id: String = "",

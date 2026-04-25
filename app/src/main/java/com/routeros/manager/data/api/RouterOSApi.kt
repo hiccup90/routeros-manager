@@ -82,6 +82,9 @@ interface RouterOSApi {
     suspend fun editDhcpNetwork(@Path("id") id: String, @Body request: Map<String, String>): List<Map<String, String>>
 
     // DNS
+    @POST("/rest/ip/dns/print")
+    suspend fun getIpDnsSettings(@Body request: PrintRequest): List<Map<String, String>>
+
     @POST("/rest/ip/dns/static/print")
     suspend fun getDnsRecords(@Body request: PrintRequest): List<Map<String, String>>
 

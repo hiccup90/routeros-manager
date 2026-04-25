@@ -248,11 +248,6 @@ private fun SummaryCard(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Text(
-                text = "数据源：DHCP / ARP / IPv6 邻居 / Connection Tracking",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
             lastUpdatedAt?.let {
                 Text(
                     text = "更新于 ${formatTimestamp(it)}",
@@ -330,7 +325,6 @@ private fun DeviceCard(
                         DetailLine("IPv6", device.ipv6Display)
                         DetailLine("接口", device.interfaceDisplay)
                         TrafficSection(device = device)
-                        DetailLine("说明", "基于 Connection Tracking 统计；展开期间每 5 秒刷新一次")
                         if (device.hostname.isNotBlank() && device.hostname != device.displayName) {
                             DetailLine("主机名", device.hostname)
                         }

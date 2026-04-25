@@ -18,6 +18,7 @@ import com.routeros.manager.data.api.FirewallFilter
 import com.routeros.manager.data.api.IdRequest
 import com.routeros.manager.data.api.InterfaceItem
 import com.routeros.manager.data.api.IpAddress
+import com.routeros.manager.data.api.IpDnsSettings
 import com.routeros.manager.data.api.Ipv6Address
 import com.routeros.manager.data.api.Ipv6DhcpClient
 import com.routeros.manager.data.api.Ipv6DhcpServer
@@ -222,6 +223,20 @@ class RouterOSRepository @Inject constructor(
     }
 
     // ===== DNS =====
+    suspend fun getIpDnsSettings(props: List<String>? = null): Result<IpDnsSettings> = runCatching {
+        val request = PrintRequest(proplist = props, withoutPaging = "")
+        val map = api.getIpDnsSettings(request).firstOrNull().orEmpty()
+        IpDnsSettings(
+            servers = map["servers"] ?: "",
+            dynamicServers = map["dynamic-servers"] ?: "",
+            allowRemoteRequests = map["allow-remote-requests"] ?: "false",
+            cacheSize = map["cache-size"] ?: "",
+            cacheUsed = map["cache-used"] ?: "",
+            maxConcurrentQueries = map["max-concurrent-queries"] ?: "",
+            maxConcurrentTcpSessions = map["max-concurrent-tcp-sessions"] ?: ""
+        )
+    }
+
     suspend fun getDnsRecords(props: List<String>? = null): Result<List<DnsRecord>> = runCatching {
         val request = PrintRequest(proplist = props, withoutPaging = "")
         api.getDnsRecords(request).map { map ->
