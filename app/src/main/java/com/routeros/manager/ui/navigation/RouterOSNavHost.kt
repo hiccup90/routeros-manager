@@ -18,6 +18,7 @@ import com.routeros.manager.ui.network.detail.DhcpNetworkListScreen
 import com.routeros.manager.ui.network.detail.DhcpServerListScreen
 import com.routeros.manager.ui.network.detail.DnsRecordListScreen
 import com.routeros.manager.ui.network.detail.FilterRuleListScreen
+import com.routeros.manager.ui.network.detail.FirewallPlaceholderScreen
 import com.routeros.manager.ui.network.detail.Ipv4FirewallHubScreen
 import com.routeros.manager.ui.network.detail.Ipv6FilterRuleListScreen
 import com.routeros.manager.ui.network.detail.Ipv6FirewallHubScreen
@@ -64,15 +65,25 @@ fun RouterOSNavHost(
         composable(NetworkRoutes.IPV4_FIREWALL_HUB) {
             Ipv4FirewallHubScreen(
                 onNavigateBack = popBack,
+                onOpenFilterRules = { navController.navigate(NetworkRoutes.FILTER_RULES) },
                 onOpenNatRules = { navController.navigate(NetworkRoutes.NAT_RULES) },
-                onOpenFilterRules = { navController.navigate(NetworkRoutes.FILTER_RULES) }
+                onOpenMangle = { navController.navigate(NetworkRoutes.IPV4_MANGLE) },
+                onOpenRaw = { navController.navigate(NetworkRoutes.IPV4_RAW) },
+                onOpenServicePorts = { navController.navigate(NetworkRoutes.IPV4_SERVICE_PORTS) },
+                onOpenConnections = { navController.navigate(NetworkRoutes.IPV4_CONNECTIONS) },
+                onOpenAddressLists = { navController.navigate(NetworkRoutes.IPV4_ADDRESS_LISTS) },
+                onOpenLayer7 = { navController.navigate(NetworkRoutes.IPV4_LAYER7) }
             )
         }
 
         composable(NetworkRoutes.IPV6_FIREWALL_HUB) {
             Ipv6FirewallHubScreen(
                 onNavigateBack = popBack,
-                onOpenFilterRules = { navController.navigate(NetworkRoutes.IPV6_FILTER_RULES) }
+                onOpenFilterRules = { navController.navigate(NetworkRoutes.IPV6_FILTER_RULES) },
+                onOpenMangle = { navController.navigate(NetworkRoutes.IPV6_MANGLE) },
+                onOpenRaw = { navController.navigate(NetworkRoutes.IPV6_RAW) },
+                onOpenConnections = { navController.navigate(NetworkRoutes.IPV6_CONNECTIONS) },
+                onOpenAddressLists = { navController.navigate(NetworkRoutes.IPV6_ADDRESS_LISTS) }
             )
         }
 
@@ -144,6 +155,46 @@ fun RouterOSNavHost(
 
         composable(NetworkRoutes.IPV6_FILTER_RULES) {
             Ipv6FilterRuleListScreen(onNavigateBack = popBack)
+        }
+
+        composable(NetworkRoutes.IPV4_MANGLE) {
+            FirewallPlaceholderScreen("IPv4 Mangle", "这里将补 RouterOS IPv4 mangle 规则：连接标记、路由标记、报文标记。", popBack)
+        }
+
+        composable(NetworkRoutes.IPV4_RAW) {
+            FirewallPlaceholderScreen("IPv4 Raw", "这里将补 RouterOS IPv4 raw 规则：在连接跟踪前做快速匹配、drop、notrack。", popBack)
+        }
+
+        composable(NetworkRoutes.IPV4_SERVICE_PORTS) {
+            FirewallPlaceholderScreen("IPv4 Service Ports", "这里将补 RouterOS service-port / ALG 开关管理。", popBack)
+        }
+
+        composable(NetworkRoutes.IPV4_CONNECTIONS) {
+            FirewallPlaceholderScreen("IPv4 Connections", "这里将补 RouterOS connection tracking 连接表查看能力。", popBack)
+        }
+
+        composable(NetworkRoutes.IPV4_ADDRESS_LISTS) {
+            FirewallPlaceholderScreen("IPv4 Address Lists", "这里将补 RouterOS IPv4 address-list 列表与编辑能力。", popBack)
+        }
+
+        composable(NetworkRoutes.IPV4_LAYER7) {
+            FirewallPlaceholderScreen("IPv4 Layer7", "这里将补 RouterOS Layer7 协议匹配规则管理。", popBack)
+        }
+
+        composable(NetworkRoutes.IPV6_MANGLE) {
+            FirewallPlaceholderScreen("IPv6 Mangle", "这里将补 RouterOS IPv6 mangle 规则：连接标记、路由标记、报文标记。", popBack)
+        }
+
+        composable(NetworkRoutes.IPV6_RAW) {
+            FirewallPlaceholderScreen("IPv6 Raw", "这里将补 RouterOS IPv6 raw 规则：在连接跟踪前做快速匹配、drop、notrack。", popBack)
+        }
+
+        composable(NetworkRoutes.IPV6_CONNECTIONS) {
+            FirewallPlaceholderScreen("IPv6 Connections", "这里将补 RouterOS IPv6 connection tracking 连接表查看能力。", popBack)
+        }
+
+        composable(NetworkRoutes.IPV6_ADDRESS_LISTS) {
+            FirewallPlaceholderScreen("IPv6 Address Lists", "这里将补 RouterOS IPv6 address-list 列表与编辑能力。", popBack)
         }
     }
 }
