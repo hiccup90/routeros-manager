@@ -15,8 +15,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
@@ -31,7 +31,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -53,6 +52,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.routeros.manager.data.api.IpAddress
+import com.routeros.manager.ui.components.GlassButton
+import com.routeros.manager.ui.components.GlassTextField
 import com.routeros.manager.ui.theme.PrimaryTeal
 import com.routeros.manager.ui.network.detail.IpAddressListViewModel.AddressItem
 
@@ -75,7 +76,7 @@ fun IpAddressListScreen(
                 title = { Text("IPv4 地址") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
                     }
                 },
                 actions = {
@@ -118,7 +119,7 @@ fun IpAddressListScreen(
                     ) {
                         Text(uiState.error!!, color = MaterialTheme.colorScheme.error)
                         Spacer(modifier = Modifier.height(8.dp))
-                        TextButton(onClick = { viewModel.loadData() }) { Text("重试") }
+                        GlassButton(text = "重试", onClick = { viewModel.loadData() }, primary = false)
                     }
                 }
                 uiState.items.isEmpty() -> {
@@ -230,15 +231,21 @@ fun IpAddressListItem(
             title = { Text("确认删除") },
             text = { Text("确定要删除此 IP 地址吗？") },
             confirmButton = {
-                TextButton(onClick = {
-                    showDeleteDialog = false
-                    onDelete()
-                }) {
-                    Text("删除", color = MaterialTheme.colorScheme.error)
-                }
+                GlassButton(
+                    text = "删除",
+                    onClick = {
+                        showDeleteDialog = false
+                        onDelete()
+                    },
+                    primary = false
+                )
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("取消") }
+                GlassButton(
+                    text = "取消",
+                    onClick = { showDeleteDialog = false },
+                    primary = false
+                )
             }
         )
     }
@@ -263,7 +270,7 @@ fun AddIpAddressDialog(
         title = { Text("添加 IP 地址") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
+                GlassTextField(
                     value = address,
                     onValueChange = { address = it },
                     label = { Text("地址（如 192.168.1.100/24）") },
@@ -274,7 +281,7 @@ fun AddIpAddressDialog(
                     expanded = expanded,
                     onExpandedChange = { expanded = it }
                 ) {
-                    OutlinedTextField(
+                    GlassTextField(
                         value = selectedInterface,
                         onValueChange = {},
                         readOnly = true,
@@ -297,7 +304,7 @@ fun AddIpAddressDialog(
                         }
                     }
                 }
-                OutlinedTextField(
+                GlassTextField(
                     value = comment,
                     onValueChange = { comment = it },
                     label = { Text("备注（可选）") },
@@ -306,15 +313,18 @@ fun AddIpAddressDialog(
             }
         },
         confirmButton = {
-            TextButton(
+            GlassButton(
+                text = "确定",
                 onClick = {
                     if (address.isNotBlank() && selectedInterface.isNotBlank()) {
                         onConfirm(address, selectedInterface, comment.ifBlank { null })
                     }
                 }
-            ) { Text("确定") }
+            )
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } }
+        dismissButton = {
+            GlassButton(text = "取消", onClick = onDismiss, primary = false)
+        }
     )
 }
 
@@ -336,7 +346,7 @@ fun EditIpAddressDialog(
         title = { Text("编辑 IP 地址") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
+                GlassTextField(
                     value = address,
                     onValueChange = { address = it },
                     label = { Text("地址") },
@@ -346,7 +356,7 @@ fun EditIpAddressDialog(
                     expanded = expanded,
                     onExpandedChange = { expanded = it }
                 ) {
-                    OutlinedTextField(
+                    GlassTextField(
                         value = selectedInterface,
                         onValueChange = {},
                         readOnly = true,
@@ -369,7 +379,7 @@ fun EditIpAddressDialog(
                         }
                     }
                 }
-                OutlinedTextField(
+                GlassTextField(
                     value = comment,
                     onValueChange = { comment = it },
                     label = { Text("备注") },
@@ -378,7 +388,8 @@ fun EditIpAddressDialog(
             }
         },
         confirmButton = {
-            TextButton(
+            GlassButton(
+                text = "确定",
                 onClick = {
                     onConfirm(
                         mapOf(
@@ -388,8 +399,10 @@ fun EditIpAddressDialog(
                         )
                     )
                 }
-            ) { Text("确定") }
+            )
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } }
+        dismissButton = {
+            GlassButton(text = "取消", onClick = onDismiss, primary = false)
+        }
     )
 }

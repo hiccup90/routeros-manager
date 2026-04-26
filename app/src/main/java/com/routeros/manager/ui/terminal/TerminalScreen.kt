@@ -30,16 +30,12 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Router
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,8 +51,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.routeros.manager.ui.components.GlassButton
 import com.routeros.manager.ui.components.GlassCard
+import com.routeros.manager.ui.components.GlassFilterChip
 import com.routeros.manager.ui.components.GlassScaffold
+import com.routeros.manager.ui.components.GlassTextField
 import com.routeros.manager.ui.components.GlassTitleBar
 import com.routeros.manager.ui.components.animateGlassSize
 import com.routeros.manager.ui.theme.PrimaryTeal
@@ -112,27 +111,23 @@ fun TerminalScreen(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                FilterChip(
+                GlassFilterChip(
                     selected = !uiState.showOnlineOnly,
                     onClick = { viewModel.setShowOnlineOnly(false) },
                     label = { Text("全部设备") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = PrimaryTeal.copy(alpha = 0.18f)
-                    )
+                    modifier = Modifier.weight(1f)
                 )
-                FilterChip(
+                GlassFilterChip(
                     selected = uiState.showOnlineOnly,
                     onClick = { viewModel.setShowOnlineOnly(true) },
                     label = { Text("仅在线") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = StatusSuccess.copy(alpha = 0.18f)
-                    )
+                    modifier = Modifier.weight(1f)
                 )
             }
 
-            OutlinedTextField(
+            GlassTextField(
                 value = uiState.query,
                 onValueChange = viewModel::updateQuery,
                 modifier = Modifier.fillMaxWidth(),
@@ -226,19 +221,26 @@ private fun SummaryCard(
     GlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 18.dp, vertical = 16.dp)
+                .padding(horizontal = 18.dp, vertical = 18.dp)
                 .animateGlassSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Devices, contentDescription = null, tint = PrimaryTeal)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("在线设备", style = MaterialTheme.typography.titleMedium)
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = "DEVICE CONSOLE",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = PrimaryTeal
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Devices, contentDescription = null, tint = PrimaryTeal)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("在线设备", style = MaterialTheme.typography.titleLarge)
+                    }
                 }
                 if (isRefreshing) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
@@ -247,11 +249,22 @@ private fun SummaryCard(
             Text(
                 text = buildString {
                     append(if (query.isBlank()) "$deviceCount 台设备" else "筛选后 $deviceCount 台")
-                    append(if (showOnlineOnly) " · 在线" else "")
+                    append(if (showOnlineOnly) " · 在线优先" else " · 全部视图")
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.24f)
+            ) {
+                Text(
+                    text = if (query.isBlank()) "按设备名、IP、MAC 或接口快速定位终端。" else "当前已启用关键词过滤，可继续缩小设备范围。",
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
@@ -263,28 +276,33 @@ private fun DeviceCard(
     onToggle: () -> Unit,
     onOpenNetworkConfig: (String) -> Unit
 ) {
-    GlassCard(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    val accent = statusColor(device.status)
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
         Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onToggle)
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .clip(CircleShape)
-                        .background(statusColor(device.status))
-                )
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = accent.copy(alpha = 0.14f)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 12.dp, vertical = 10.dp)
+                            .size(10.dp)
+                            .clip(CircleShape)
+                            .background(accent)
+                    )
+                }
                 Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         text = device.displayName,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -296,6 +314,7 @@ private fun DeviceCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+                    SourceChips(device.sources)
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Icon(
@@ -314,23 +333,33 @@ private fun DeviceCard(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
                     Column(
                         modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        DetailLine("MAC", device.macAddress)
-                        DetailLine("IPv6", device.ipv6Display)
-                        DetailLine("接口", device.interfaceDisplay)
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(14.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                DetailLine("MAC", device.macAddress)
+                                DetailLine("IPv6", device.ipv6Display)
+                                DetailLine("接口", device.interfaceDisplay)
+                            }
+                        }
                         TrafficSection(device = device)
-                        Button(
+                        GlassButton(
+                            text = "打开网络配置",
                             onClick = {
                                 val query = listOf(device.primaryAddress, device.macAddress, device.displayName)
                                     .firstOrNull { it.isNotBlank() && it != "--" }
                                     .orEmpty()
                                 onOpenNetworkConfig(query)
                             },
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text("打开网络配置")
-                        }
+                            primary = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
             }

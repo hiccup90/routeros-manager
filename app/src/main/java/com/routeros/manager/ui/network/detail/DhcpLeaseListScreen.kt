@@ -48,6 +48,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.routeros.manager.ui.components.GlassButton
+import com.routeros.manager.ui.components.GlassFilterChip
+import com.routeros.manager.ui.components.GlassTextField
 import com.routeros.manager.ui.theme.PrimaryTeal
 import com.routeros.manager.ui.theme.StatusSuccess
 
@@ -116,7 +119,7 @@ fun DhcpLeaseListScreen(
 
                 else -> {
                     Column(modifier = Modifier.fillMaxSize()) {
-                        OutlinedTextField(
+                        GlassTextField(
                             value = uiState.query,
                             onValueChange = viewModel::updateQuery,
                             modifier = Modifier
@@ -162,7 +165,8 @@ fun DhcpLeaseListScreen(
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                         }
-                                        AssistChip(
+                                        GlassFilterChip(
+                                            selected = !item.isDynamic,
                                             onClick = {},
                                             label = { Text(if (item.isDynamic) "动态" else "静态") }
                                         )
@@ -236,17 +240,19 @@ fun DhcpLeaseListScreen(
                                         horizontalArrangement = Arrangement.End
                                     ) {
                                         if (item.isDynamic) {
-                                            TextButton(onClick = { viewModel.showStaticBindingDialog(item) }) {
-                                                Icon(Icons.Default.PushPin, contentDescription = null)
-                                                Spacer(Modifier.width(6.dp))
-                                                Text("静态绑定")
-                                            }
+                                            GlassButton(
+                                                text = "静态绑定",
+                                                onClick = { viewModel.showStaticBindingDialog(item) },
+                                                primary = false,
+                                                leadingIcon = Icons.Default.PushPin
+                                            )
                                         }
-                                        TextButton(onClick = { viewModel.showEditDialog(item) }) {
-                                            Icon(Icons.Default.Edit, contentDescription = null)
-                                            Spacer(Modifier.width(6.dp))
-                                            Text("编辑")
-                                        }
+                                        GlassButton(
+                                            text = "编辑",
+                                            onClick = { viewModel.showEditDialog(item) },
+                                            primary = false,
+                                            leadingIcon = Icons.Default.Edit
+                                        )
                                     }
                                 }
                             }
@@ -278,43 +284,43 @@ fun DhcpLeaseListScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        OutlinedTextField(
+                        GlassTextField(
                             value = address,
                             onValueChange = { address = it },
                             label = { Text("固定 IP") },
                             modifier = Modifier.fillMaxWidth()
                         )
-                        OutlinedTextField(
+                        GlassTextField(
                             value = server,
                             onValueChange = { server = it },
                             label = { Text("服务器") },
                             modifier = Modifier.fillMaxWidth()
                         )
-                        OutlinedTextField(
+                        GlassTextField(
                             value = gateway,
                             onValueChange = { gateway = it },
                             label = { Text("网关") },
                             modifier = Modifier.fillMaxWidth()
                         )
-                        OutlinedTextField(
+                        GlassTextField(
                             value = dnsServer,
                             onValueChange = { dnsServer = it },
                             label = { Text("DNS 服务器") },
                             modifier = Modifier.fillMaxWidth()
                         )
-                        OutlinedTextField(
+                        GlassTextField(
                             value = addressList,
                             onValueChange = { addressList = it },
                             label = { Text("Address List") },
                             modifier = Modifier.fillMaxWidth()
                         )
-                        OutlinedTextField(
+                        GlassTextField(
                             value = dhcpOption,
                             onValueChange = { dhcpOption = it },
                             label = { Text("DHCP Options") },
                             modifier = Modifier.fillMaxWidth()
                         )
-                        OutlinedTextField(
+                        GlassTextField(
                             value = comment,
                             onValueChange = { comment = it },
                             label = { Text("备注") },
@@ -323,7 +329,8 @@ fun DhcpLeaseListScreen(
                     }
                 },
                 confirmButton = {
-                    TextButton(
+                    GlassButton(
+                        text = "保存",
                         onClick = {
                             viewModel.saveStaticBinding(
                                 id = item.id,
@@ -336,14 +343,14 @@ fun DhcpLeaseListScreen(
                                 dnsServer = dnsServer
                             )
                         }
-                    ) {
-                        Text("保存")
-                    }
+                    )
                 },
                 dismissButton = {
-                    TextButton(onClick = { viewModel.hideStaticBindingDialog() }) {
-                        Text("取消")
-                    }
+                    GlassButton(
+                        text = "取消",
+                        onClick = { viewModel.hideStaticBindingDialog() },
+                        primary = false
+                    )
                 }
             )
         }
@@ -361,31 +368,31 @@ fun DhcpLeaseListScreen(
                 title = { Text("编辑 DHCP 租约") },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        OutlinedTextField(
+                        GlassTextField(
                             value = address,
                             onValueChange = { address = it },
                             label = { Text("IP 地址") },
                             modifier = Modifier.fillMaxWidth()
                         )
-                        OutlinedTextField(
+                        GlassTextField(
                             value = server,
                             onValueChange = { server = it },
                             label = { Text("服务器") },
                             modifier = Modifier.fillMaxWidth()
                         )
-                        OutlinedTextField(
+                        GlassTextField(
                             value = addressList,
                             onValueChange = { addressList = it },
                             label = { Text("Address List") },
                             modifier = Modifier.fillMaxWidth()
                         )
-                        OutlinedTextField(
+                        GlassTextField(
                             value = dhcpOption,
                             onValueChange = { dhcpOption = it },
                             label = { Text("DHCP Options") },
                             modifier = Modifier.fillMaxWidth()
                         )
-                        OutlinedTextField(
+                        GlassTextField(
                             value = comment,
                             onValueChange = { comment = it },
                             label = { Text("备注") },
@@ -394,7 +401,8 @@ fun DhcpLeaseListScreen(
                     }
                 },
                 confirmButton = {
-                    TextButton(
+                    GlassButton(
+                        text = "保存",
                         onClick = {
                             viewModel.editLease(
                                 id = item.id,
@@ -405,14 +413,14 @@ fun DhcpLeaseListScreen(
                                 dhcpOption = dhcpOption
                             )
                         }
-                    ) {
-                        Text("保存")
-                    }
+                    )
                 },
                 dismissButton = {
-                    TextButton(onClick = { viewModel.hideEditDialog() }) {
-                        Text("取消")
-                    }
+                    GlassButton(
+                        text = "取消",
+                        onClick = { viewModel.hideEditDialog() },
+                        primary = false
+                    )
                 }
             )
         }

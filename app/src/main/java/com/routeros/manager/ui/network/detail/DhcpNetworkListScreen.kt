@@ -25,13 +25,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import com.routeros.manager.ui.components.GlassButton
+import com.routeros.manager.ui.components.GlassTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -122,10 +122,12 @@ fun DhcpNetworkListScreen(
                                     Text("备注: ${item.comment}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
-                                TextButton(onClick = { viewModel.showEditDialog(item) }) {
-                                    Icon(Icons.Default.Edit, contentDescription = null)
-                                    Text("编辑")
-                                }
+                                GlassButton(
+                                    text = "编辑",
+                                    onClick = { viewModel.showEditDialog(item) },
+                                    primary = false,
+                                    leadingIcon = Icons.Default.Edit
+                                )
                             }
                         }
                     }
@@ -145,16 +147,23 @@ fun DhcpNetworkListScreen(
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(item.address, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        OutlinedTextField(value = gateway, onValueChange = { gateway = it }, label = { Text("网关") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = dnsServer, onValueChange = { dnsServer = it }, label = { Text("DNS 服务器") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = comment, onValueChange = { comment = it }, label = { Text("备注") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = gateway, onValueChange = { gateway = it }, label = { Text("网关") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = dnsServer, onValueChange = { dnsServer = it }, label = { Text("DNS 服务器") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = comment, onValueChange = { comment = it }, label = { Text("备注") }, modifier = Modifier.fillMaxWidth())
                     }
                 },
                 confirmButton = {
-                    TextButton(onClick = { viewModel.saveEdit(item.id, gateway, dnsServer, comment) }) { Text("保存") }
+                    GlassButton(
+                        text = "保存",
+                        onClick = { viewModel.saveEdit(item.id, gateway, dnsServer, comment) }
+                    )
                 },
                 dismissButton = {
-                    TextButton(onClick = { viewModel.hideEditDialog() }) { Text("取消") }
+                    GlassButton(
+                        text = "取消",
+                        onClick = { viewModel.hideEditDialog() },
+                        primary = false
+                    )
                 }
             )
         }

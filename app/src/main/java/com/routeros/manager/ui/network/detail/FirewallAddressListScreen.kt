@@ -26,14 +26,14 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import com.routeros.manager.ui.components.GlassButton
+import com.routeros.manager.ui.components.GlassTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -113,8 +113,20 @@ fun FirewallAddressListScreen(
                 onDismissRequest = { pendingDeleteId = null },
                 title = { Text("确认删除") },
                 text = { Text("确定要删除此 Address List 项吗？") },
-                confirmButton = { TextButton(onClick = { pendingDeleteId = null; viewModel.delete(deletingId) }) { Text("删除", color = MaterialTheme.colorScheme.error) } },
-                dismissButton = { TextButton(onClick = { pendingDeleteId = null }) { Text("取消") } }
+                confirmButton = {
+                    GlassButton(
+                        text = "删除",
+                        onClick = { pendingDeleteId = null; viewModel.delete(deletingId) },
+                        primary = false
+                    )
+                },
+                dismissButton = {
+                    GlassButton(
+                        text = "取消",
+                        onClick = { pendingDeleteId = null },
+                        primary = false
+                    )
+                }
             )
         }
 
@@ -128,14 +140,25 @@ fun FirewallAddressListScreen(
                 title = { Text("添加 IPv4 Address List") },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(value = list, onValueChange = { list = it }, label = { Text("List") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = address, onValueChange = { address = it }, label = { Text("Address") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = timeout, onValueChange = { timeout = it }, label = { Text("Timeout（可选）") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = comment, onValueChange = { comment = it }, label = { Text("备注") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = list, onValueChange = { list = it }, label = { Text("List") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = address, onValueChange = { address = it }, label = { Text("Address") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = timeout, onValueChange = { timeout = it }, label = { Text("Timeout（可选）") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = comment, onValueChange = { comment = it }, label = { Text("备注") }, modifier = Modifier.fillMaxWidth())
                     }
                 },
-                confirmButton = { TextButton(onClick = { viewModel.addItem(list, address, timeout, comment.ifBlank { null }) }) { Text("确定") } },
-                dismissButton = { TextButton(onClick = { viewModel.hideAddDialog() }) { Text("取消") } }
+                confirmButton = {
+                    GlassButton(
+                        text = "确定",
+                        onClick = { viewModel.addItem(list, address, timeout, comment.ifBlank { null }) }
+                    )
+                },
+                dismissButton = {
+                    GlassButton(
+                        text = "取消",
+                        onClick = { viewModel.hideAddDialog() },
+                        primary = false
+                    )
+                }
             )
         }
 
@@ -150,14 +173,25 @@ fun FirewallAddressListScreen(
                 title = { Text("编辑 IPv4 Address List") },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(value = list, onValueChange = { list = it }, label = { Text("List") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = address, onValueChange = { address = it }, label = { Text("Address") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = timeout, onValueChange = { timeout = it }, label = { Text("Timeout") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = comment, onValueChange = { comment = it }, label = { Text("备注") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = list, onValueChange = { list = it }, label = { Text("List") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = address, onValueChange = { address = it }, label = { Text("Address") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = timeout, onValueChange = { timeout = it }, label = { Text("Timeout") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = comment, onValueChange = { comment = it }, label = { Text("备注") }, modifier = Modifier.fillMaxWidth())
                     }
                 },
-                confirmButton = { TextButton(onClick = { viewModel.editItem(uiState.editingId!!, list, address, timeout, comment) }) { Text("确定") } },
-                dismissButton = { TextButton(onClick = { viewModel.hideEditDialog() }) { Text("取消") } }
+                confirmButton = {
+                    GlassButton(
+                        text = "确定",
+                        onClick = { viewModel.editItem(uiState.editingId!!, list, address, timeout, comment) }
+                    )
+                },
+                dismissButton = {
+                    GlassButton(
+                        text = "取消",
+                        onClick = { viewModel.hideEditDialog() },
+                        primary = false
+                    )
+                }
             )
         }
     }

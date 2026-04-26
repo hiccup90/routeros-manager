@@ -31,8 +31,6 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -40,8 +38,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -62,8 +58,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.routeros.manager.ui.components.GlassButton
 import com.routeros.manager.ui.components.GlassCard
 import com.routeros.manager.ui.components.GlassScaffold
+import com.routeros.manager.ui.components.GlassTextField
 import com.routeros.manager.ui.components.GlassTitleBar
 import com.routeros.manager.ui.components.animateGlassSize
 import com.routeros.manager.ui.theme.PrimaryTeal
@@ -103,6 +101,31 @@ fun SettingsScreen(
                     .padding(horizontal = 16.dp, vertical = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .animateGlassSize(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = "CONNECTION PROFILE",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = PrimaryTeal
+                    )
+                    Text(
+                        text = "先配置 RouterOS REST 连接，再决定首页展示哪些接口。",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "设置页现在分成连接信息、首页接口显示和危险区域三部分，减少扫读成本。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
             // Connection Settings
             Text(
                 text = "连接设置",
@@ -118,7 +141,7 @@ fun SettingsScreen(
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     // Host
-                    OutlinedTextField(
+                    GlassTextField(
                         value = uiState.host,
                         onValueChange = { viewModel.updateHost(it) },
                         label = { Text("主机地址") },
@@ -131,16 +154,11 @@ fun SettingsScreen(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryTeal,
-                            focusedLabelColor = PrimaryTeal,
-                            cursorColor = PrimaryTeal
-                        )
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri)
                     )
 
                     // Port
-                    OutlinedTextField(
+                    GlassTextField(
                         value = if (uiState.port == 0) "" else uiState.port.toString(),
                         onValueChange = { viewModel.updatePort(it) },
                         label = { Text("端口") },
@@ -153,16 +171,11 @@ fun SettingsScreen(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryTeal,
-                            focusedLabelColor = PrimaryTeal,
-                            cursorColor = PrimaryTeal
-                        )
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
 
                     // Username
-                    OutlinedTextField(
+                    GlassTextField(
                         value = uiState.username,
                         onValueChange = { viewModel.updateUsername(it) },
                         label = { Text("用户名") },
@@ -174,16 +187,11 @@ fun SettingsScreen(
                             )
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryTeal,
-                            focusedLabelColor = PrimaryTeal,
-                            cursorColor = PrimaryTeal
-                        )
+                        singleLine = true
                     )
 
                     // Password
-                    OutlinedTextField(
+                    GlassTextField(
                         value = uiState.password,
                         onValueChange = { viewModel.updatePassword(it) },
                         label = { Text("密码") },
@@ -204,12 +212,7 @@ fun SettingsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryTeal,
-                            focusedLabelColor = PrimaryTeal,
-                            cursorColor = PrimaryTeal
-                        )
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                     )
 
                     Text(
@@ -225,43 +228,21 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Button(
+                GlassButton(
+                    text = if (uiState.isLoading) "连接中..." else "测试连接",
                     onClick = { viewModel.testConnection() },
                     modifier = Modifier.weight(1f),
                     enabled = !uiState.isLoading && uiState.host.isNotEmpty(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = MaterialTheme.colorScheme.primary,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Text("测试连接")
-                    }
-                }
+                    primary = false
+                )
 
-                Button(
+                GlassButton(
+                    text = "保存",
                     onClick = { viewModel.saveConnection() },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryTeal
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Save,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("保存")
-                }
+                    primary = true,
+                    leadingIcon = Icons.Default.Save
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -373,46 +354,36 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.error
             )
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Row(
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(18.dp)
+                        .animateGlassSize(),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    Column {
-                        Text(
-                            text = "清除所有数据",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = "删除所有保存的连接信息",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    TextButton(
+                    Text(
+                        text = "DANGER ZONE",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Text(
+                        text = "清除所有本地保存的 RouterOS 连接信息",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "此操作会删除当前保存的主机、端口、用户名、密码以及首页接口选择。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    GlassButton(
+                        text = "清除全部数据",
                         onClick = { viewModel.clearAllData() },
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("清除")
-                    }
+                        primary = false,
+                        leadingIcon = Icons.Default.Delete,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
 

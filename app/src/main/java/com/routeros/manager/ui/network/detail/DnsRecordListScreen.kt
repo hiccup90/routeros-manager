@@ -13,7 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.routeros.manager.data.api.DnsRecord
+import com.routeros.manager.ui.components.GlassButton
+import com.routeros.manager.ui.components.GlassTextField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,8 +75,20 @@ fun DnsRecordListScreen(
                 onDismissRequest = { pendingDeleteId = null },
                 title = { Text("确认删除") },
                 text = { Text("确定要删除此 DNS 记录吗？") },
-                confirmButton = { TextButton(onClick = { pendingDeleteId = null; viewModel.delete(deletingId) }) { Text("删除", color = MaterialTheme.colorScheme.error) } },
-                dismissButton = { TextButton(onClick = { pendingDeleteId = null }) { Text("取消") } }
+                confirmButton = {
+                    GlassButton(
+                        text = "删除",
+                        onClick = { pendingDeleteId = null; viewModel.delete(deletingId) },
+                        primary = false
+                    )
+                },
+                dismissButton = {
+                    GlassButton(
+                        text = "取消",
+                        onClick = { pendingDeleteId = null },
+                        primary = false
+                    )
+                }
             )
         }
         if (uiState.showAddDialog) {
@@ -85,13 +98,24 @@ fun DnsRecordListScreen(
             AlertDialog(onDismissRequest = { viewModel.hideAddDialog() }, title = { Text("添加 DNS 记录") },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("域名") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = address, onValueChange = { address = it }, label = { Text("IP 地址") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = comment, onValueChange = { comment = it }, label = { Text("备注（可选）") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = name, onValueChange = { name = it }, label = { Text("域名") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = address, onValueChange = { address = it }, label = { Text("IP 地址") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = comment, onValueChange = { comment = it }, label = { Text("备注（可选）") }, modifier = Modifier.fillMaxWidth())
                     }
                 },
-                confirmButton = { TextButton(onClick = { if (name.isNotBlank() && address.isNotBlank()) viewModel.addRecord(name, address, null, comment.ifBlank { null }) }) { Text("确定") } },
-                dismissButton = { TextButton(onClick = { viewModel.hideAddDialog() }) { Text("取消") } })
+                confirmButton = {
+                    GlassButton(
+                        text = "确定",
+                        onClick = { if (name.isNotBlank() && address.isNotBlank()) viewModel.addRecord(name, address, null, comment.ifBlank { null }) }
+                    )
+                },
+                dismissButton = {
+                    GlassButton(
+                        text = "取消",
+                        onClick = { viewModel.hideAddDialog() },
+                        primary = false
+                    )
+                })
         }
         if (uiState.showEditDialog && uiState.editingItem != null) {
             val item = uiState.editingItem!!
@@ -101,13 +125,24 @@ fun DnsRecordListScreen(
             AlertDialog(onDismissRequest = { viewModel.hideEditDialog() }, title = { Text("编辑 DNS 记录") },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("域名") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = address, onValueChange = { address = it }, label = { Text("IP 地址") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = comment, onValueChange = { comment = it }, label = { Text("备注") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = name, onValueChange = { name = it }, label = { Text("域名") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = address, onValueChange = { address = it }, label = { Text("IP 地址") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = comment, onValueChange = { comment = it }, label = { Text("备注") }, modifier = Modifier.fillMaxWidth())
                     }
                 },
-                confirmButton = { TextButton(onClick = { viewModel.editRecord(uiState.editingId!!, mapOf("name" to name, "address" to address, "comment" to comment)) }) { Text("确定") } },
-                dismissButton = { TextButton(onClick = { viewModel.hideEditDialog() }) { Text("取消") } })
+                confirmButton = {
+                    GlassButton(
+                        text = "确定",
+                        onClick = { viewModel.editRecord(uiState.editingId!!, mapOf("name" to name, "address" to address, "comment" to comment)) }
+                    )
+                },
+                dismissButton = {
+                    GlassButton(
+                        text = "取消",
+                        onClick = { viewModel.hideEditDialog() },
+                        primary = false
+                    )
+                })
         }
     }
 }

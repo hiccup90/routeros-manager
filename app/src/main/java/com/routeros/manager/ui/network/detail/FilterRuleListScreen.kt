@@ -13,7 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.routeros.manager.data.api.FirewallFilter
+import com.routeros.manager.ui.components.GlassButton
+import com.routeros.manager.ui.components.GlassTextField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,8 +79,20 @@ fun FilterRuleListScreen(
                 onDismissRequest = { pendingDeleteId = null },
                 title = { Text("确认删除") },
                 text = { Text("确定要删除此过滤规则吗？") },
-                confirmButton = { TextButton(onClick = { pendingDeleteId = null; viewModel.delete(deletingId) }) { Text("删除", color = MaterialTheme.colorScheme.error) } },
-                dismissButton = { TextButton(onClick = { pendingDeleteId = null }) { Text("取消") } }
+                confirmButton = {
+                    GlassButton(
+                        text = "删除",
+                        onClick = { pendingDeleteId = null; viewModel.delete(deletingId) },
+                        primary = false
+                    )
+                },
+                dismissButton = {
+                    GlassButton(
+                        text = "取消",
+                        onClick = { pendingDeleteId = null },
+                        primary = false
+                    )
+                }
             )
         }
         if (uiState.showAddDialog) {
@@ -95,27 +108,38 @@ fun FilterRuleListScreen(
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         ExposedDropdownMenuBox(expanded = chainExpanded, onExpandedChange = { chainExpanded = it }) {
-                            OutlinedTextField(value = chain, onValueChange = {}, readOnly = true, label = { Text("Chain") },
+                            GlassTextField(value = chain, onValueChange = {}, readOnly = true, label = { Text("Chain") },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(chainExpanded) }, modifier = Modifier.fillMaxWidth().menuAnchor())
                             ExposedDropdownMenu(expanded = chainExpanded, onDismissRequest = { chainExpanded = false }) {
                                 listOf("input", "forward", "output").forEach { DropdownMenuItem(text = { Text(it) }, onClick = { chain = it; chainExpanded = false }) }
                             }
                         }
                         ExposedDropdownMenuBox(expanded = actionExpanded, onExpandedChange = { actionExpanded = it }) {
-                            OutlinedTextField(value = action, onValueChange = {}, readOnly = true, label = { Text("Action") },
+                            GlassTextField(value = action, onValueChange = {}, readOnly = true, label = { Text("Action") },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(actionExpanded) }, modifier = Modifier.fillMaxWidth().menuAnchor())
                             ExposedDropdownMenu(expanded = actionExpanded, onDismissRequest = { actionExpanded = false }) {
                                 listOf("accept", "drop", "reject", "add-src-to-address-list", "add-dst-to-address-list").forEach { DropdownMenuItem(text = { Text(it) }, onClick = { action = it; actionExpanded = false }) }
                             }
                         }
-                        OutlinedTextField(value = protocol, onValueChange = { protocol = it }, label = { Text("协议（可选）") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = srcAddress, onValueChange = { srcAddress = it }, label = { Text("源地址（可选）") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = dstAddress, onValueChange = { dstAddress = it }, label = { Text("目标地址（可选）") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = comment, onValueChange = { comment = it }, label = { Text("备注") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = protocol, onValueChange = { protocol = it }, label = { Text("协议（可选）") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = srcAddress, onValueChange = { srcAddress = it }, label = { Text("源地址（可选）") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = dstAddress, onValueChange = { dstAddress = it }, label = { Text("目标地址（可选）") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = comment, onValueChange = { comment = it }, label = { Text("备注") }, modifier = Modifier.fillMaxWidth())
                     }
                 },
-                confirmButton = { TextButton(onClick = { viewModel.addRule(chain, action, protocol, srcAddress, dstAddress, comment.ifBlank { null }) }) { Text("确定") } },
-                dismissButton = { TextButton(onClick = { viewModel.hideAddDialog() }) { Text("取消") } })
+                confirmButton = {
+                    GlassButton(
+                        text = "确定",
+                        onClick = { viewModel.addRule(chain, action, protocol, srcAddress, dstAddress, comment.ifBlank { null }) }
+                    )
+                },
+                dismissButton = {
+                    GlassButton(
+                        text = "取消",
+                        onClick = { viewModel.hideAddDialog() },
+                        primary = false
+                    )
+                })
         }
         if (uiState.showEditDialog && uiState.editingItem != null) {
             val item = uiState.editingItem!!
@@ -129,25 +153,36 @@ fun FilterRuleListScreen(
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         ExposedDropdownMenuBox(expanded = chainExpanded, onExpandedChange = { chainExpanded = it }) {
-                            OutlinedTextField(value = chain, onValueChange = {}, readOnly = true, label = { Text("Chain") },
+                            GlassTextField(value = chain, onValueChange = {}, readOnly = true, label = { Text("Chain") },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(chainExpanded) }, modifier = Modifier.fillMaxWidth().menuAnchor())
                             ExposedDropdownMenu(expanded = chainExpanded, onDismissRequest = { chainExpanded = false }) {
                                 listOf("input", "forward", "output").forEach { DropdownMenuItem(text = { Text(it) }, onClick = { chain = it; chainExpanded = false }) }
                             }
                         }
                         ExposedDropdownMenuBox(expanded = actionExpanded, onExpandedChange = { actionExpanded = it }) {
-                            OutlinedTextField(value = action, onValueChange = {}, readOnly = true, label = { Text("Action") },
+                            GlassTextField(value = action, onValueChange = {}, readOnly = true, label = { Text("Action") },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(actionExpanded) }, modifier = Modifier.fillMaxWidth().menuAnchor())
                             ExposedDropdownMenu(expanded = actionExpanded, onDismissRequest = { actionExpanded = false }) {
                                 listOf("accept", "drop", "reject", "add-src-to-address-list", "add-dst-to-address-list").forEach { DropdownMenuItem(text = { Text(it) }, onClick = { action = it; actionExpanded = false }) }
                             }
                         }
-                        OutlinedTextField(value = protocol, onValueChange = { protocol = it }, label = { Text("协议") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = comment, onValueChange = { comment = it }, label = { Text("备注") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = protocol, onValueChange = { protocol = it }, label = { Text("协议") }, modifier = Modifier.fillMaxWidth())
+                        GlassTextField(value = comment, onValueChange = { comment = it }, label = { Text("备注") }, modifier = Modifier.fillMaxWidth())
                     }
                 },
-                confirmButton = { TextButton(onClick = { viewModel.editRule(uiState.editingId!!, mapOf("chain" to chain, "action" to action, "protocol" to protocol, "comment" to comment)) }) { Text("确定") } },
-                dismissButton = { TextButton(onClick = { viewModel.hideEditDialog() }) { Text("取消") } })
+                confirmButton = {
+                    GlassButton(
+                        text = "确定",
+                        onClick = { viewModel.editRule(uiState.editingId!!, mapOf("chain" to chain, "action" to action, "protocol" to protocol, "comment" to comment)) }
+                    )
+                },
+                dismissButton = {
+                    GlassButton(
+                        text = "取消",
+                        onClick = { viewModel.hideEditDialog() },
+                        primary = false
+                    )
+                })
         }
     }
 }
