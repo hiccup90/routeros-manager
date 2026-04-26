@@ -8,6 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.routeros.manager.ui.components.GlassPageTransition
 import com.routeros.manager.ui.home.HomeScreen
 import com.routeros.manager.ui.network.NetworkScreen
 import com.routeros.manager.ui.network.detail.AddressAllocationScreen
@@ -48,61 +49,77 @@ fun RouterOSNavHost(
         modifier = modifier.fillMaxSize()
     ) {
         composable(Screen.Home.route) {
-            HomeScreen()
+            GlassPageTransition {
+                HomeScreen()
+            }
         }
 
         composable(Screen.Terminal.route) {
-            TerminalScreen(
-                onOpenNetworkConfig = { query ->
-                    navController.navigate("${NetworkRoutes.DHCP_LEASES_BASE}?query=${Uri.encode(query)}")
-                }
-            )
+            GlassPageTransition {
+                TerminalScreen(
+                    onOpenNetworkConfig = { query ->
+                        navController.navigate("${NetworkRoutes.DHCP_LEASES_BASE}?query=${Uri.encode(query)}")
+                    }
+                )
+            }
         }
 
         composable(Screen.Network.route) {
-            NetworkScreen(navController = navController)
+            GlassPageTransition {
+                NetworkScreen(navController = navController)
+            }
         }
 
         composable(Screen.Settings.route) {
-            SettingsScreen()
+            GlassPageTransition {
+                SettingsScreen()
+            }
         }
 
         composable(NetworkRoutes.IPV4_FIREWALL_HUB) {
-            Ipv4FirewallHubScreen(
-                onNavigateBack = popBack,
-                onOpenFilterRules = { navController.navigate(NetworkRoutes.FILTER_RULES) },
-                onOpenNatRules = { navController.navigate(NetworkRoutes.NAT_RULES) },
-                onOpenMangle = { navController.navigate(NetworkRoutes.IPV4_MANGLE) },
-                onOpenConnections = { navController.navigate(NetworkRoutes.IPV4_CONNECTIONS) },
-                onOpenAddressLists = { navController.navigate(NetworkRoutes.IPV4_ADDRESS_LISTS) }
-            )
+            GlassPageTransition {
+                Ipv4FirewallHubScreen(
+                    onNavigateBack = popBack,
+                    onOpenFilterRules = { navController.navigate(NetworkRoutes.FILTER_RULES) },
+                    onOpenNatRules = { navController.navigate(NetworkRoutes.NAT_RULES) },
+                    onOpenMangle = { navController.navigate(NetworkRoutes.IPV4_MANGLE) },
+                    onOpenConnections = { navController.navigate(NetworkRoutes.IPV4_CONNECTIONS) },
+                    onOpenAddressLists = { navController.navigate(NetworkRoutes.IPV4_ADDRESS_LISTS) }
+                )
+            }
         }
 
         composable(NetworkRoutes.IPV6_FIREWALL_HUB) {
-            Ipv6FirewallHubScreen(
-                onNavigateBack = popBack,
-                onOpenFilterRules = { navController.navigate(NetworkRoutes.IPV6_FILTER_RULES) },
-                onOpenMangle = { navController.navigate(NetworkRoutes.IPV6_MANGLE) },
-                onOpenConnections = { navController.navigate(NetworkRoutes.IPV6_CONNECTIONS) },
-                onOpenAddressLists = { navController.navigate(NetworkRoutes.IPV6_ADDRESS_LISTS) }
-            )
+            GlassPageTransition {
+                Ipv6FirewallHubScreen(
+                    onNavigateBack = popBack,
+                    onOpenFilterRules = { navController.navigate(NetworkRoutes.IPV6_FILTER_RULES) },
+                    onOpenMangle = { navController.navigate(NetworkRoutes.IPV6_MANGLE) },
+                    onOpenConnections = { navController.navigate(NetworkRoutes.IPV6_CONNECTIONS) },
+                    onOpenAddressLists = { navController.navigate(NetworkRoutes.IPV6_ADDRESS_LISTS) }
+                )
+            }
         }
 
         composable(NetworkRoutes.ADDRESS_ALLOCATION) {
-            AddressAllocationScreen(
-                onNavigateBack = popBack,
-                onOpenDhcpServers = { navController.navigate(NetworkRoutes.DHCP_SERVERS) },
-                onOpenDhcpNetworks = { navController.navigate(NetworkRoutes.DHCP_NETWORKS) },
-                onOpenDhcpLeases = { navController.navigate("${NetworkRoutes.DHCP_LEASES_BASE}?query=") }
-            )
+            GlassPageTransition {
+                AddressAllocationScreen(
+                    onNavigateBack = popBack,
+                    onOpenDhcpServers = { navController.navigate(NetworkRoutes.DHCP_SERVERS) },
+                    onOpenDhcpNetworks = { navController.navigate(NetworkRoutes.DHCP_NETWORKS) },
+                    onOpenDhcpLeases = { navController.navigate("${NetworkRoutes.DHCP_LEASES_BASE}?query=") }
+                )
+            }
         }
 
         composable(NetworkRoutes.IP_MANAGEMENT) {
-            IpManagementScreen(
-                onNavigateBack = popBack,
-                onOpenIpv4Addresses = { navController.navigate(NetworkRoutes.IP_ADDRESSES) },
-                onOpenIpv6Addresses = { navController.navigate(NetworkRoutes.IPV6_ADDRESSES) }
-            )
+            GlassPageTransition {
+                IpManagementScreen(
+                    onNavigateBack = popBack,
+                    onOpenIpv4Addresses = { navController.navigate(NetworkRoutes.IP_ADDRESSES) },
+                    onOpenIpv6Addresses = { navController.navigate(NetworkRoutes.IPV6_ADDRESSES) }
+                )
+            }
         }
 
         composable(NetworkRoutes.IP_ADDRESSES) {

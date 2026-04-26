@@ -1,13 +1,11 @@
 package com.routeros.manager
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -17,11 +15,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.routeros.manager.ui.components.GlassScaffold
+import com.routeros.manager.ui.components.glassBorderBrush
+import com.routeros.manager.ui.components.glassContainerColor
 import com.routeros.manager.ui.navigation.RouterOSNavHost
 import com.routeros.manager.ui.navigation.Screen
 import com.routeros.manager.ui.theme.PrimaryTeal
@@ -35,8 +39,19 @@ fun RouterOSApp() {
     GlassScaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.18f),
-                modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
+                containerColor = glassContainerColor(),
+                tonalElevation = 0.dp,
+                modifier = Modifier
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                    .shadow(
+                        elevation = 10.dp,
+                        shape = RoundedCornerShape(22.dp),
+                        ambientColor = Color.Black.copy(alpha = 0.16f),
+                        spotColor = Color.Black.copy(alpha = 0.10f)
+                    )
+                    .clip(RoundedCornerShape(22.dp))
+                    .border(width = 1.dp, brush = glassBorderBrush(), shape = RoundedCornerShape(22.dp))
             ) {
                 Screen.bottomNavItems.forEach { screen ->
                     val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
@@ -67,20 +82,18 @@ fun RouterOSApp() {
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = PrimaryTeal,
                             selectedTextColor = PrimaryTeal,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            indicatorColor = PrimaryTeal.copy(alpha = 0.2f)
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f),
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f),
+                            indicatorColor = PrimaryTeal.copy(alpha = 0.18f)
                         )
                     )
                 }
             }
         }
     ) { innerPadding ->
-        Crossfade(targetState = currentDestination?.route, label = "app-route") {
-            RouterOSNavHost(
-                navController = navController,
-                modifier = Modifier.padding(innerPadding)
-            )
-        }
+        RouterOSNavHost(
+            navController = navController,
+            modifier = Modifier.padding(innerPadding)
+        )
     }
 }

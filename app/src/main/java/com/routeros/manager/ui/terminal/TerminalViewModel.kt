@@ -213,7 +213,7 @@ class TerminalViewModel @Inject constructor(
                 isLoading = false,
                 isRefreshing = false,
                 isConfigured = true,
-                error = null,
+                error = repository.getNetworkDevicesWarning(),
                 lastUpdatedAt = updatedAt
             )
         }
@@ -453,8 +453,18 @@ class TerminalViewModel @Inject constructor(
             hostname = hostname,
             inferredName = inferredName,
             comment = comment,
-            isOnline = isOnlineStatus(status)
+            isOnline = isOnlineDevice()
         )
+    }
+
+    private fun NetworkDevice.isOnlineDevice(): Boolean {
+        val normalizedStatus = status.lowercase()
+        if (isOnlineStatus(normalizedStatus)) return true
+        if (lastSeen.isNotBlank()) return true
+        if (expires.isNotBlank() && !normalizedStatus.contains("waiting")) return true
+        if (sources.any { it.contains("ARP", ignoreCase = true) } && !normalizedStatus.contains("incomplete")) return true
+        if (sources.any { it.contains("IPv6", ignoreCase = true) } && !normalizedStatus.contains("failed")) return true
+        return false
     }
 
     private fun formatRate(bytesPerSec: Long): String {
@@ -470,8 +480,15 @@ class TerminalViewModel @Inject constructor(
     private fun normalizeAddress(value: String): String = value.substringBefore("/").trim()
 
     private fun isOnlineStatus(status: String): Boolean {
-        return status.contains("bound", ignoreCase = true) ||
-            status.contains("complete", ignoreCase = true)
+        val normalized = status.lowercase()
+        return normalized.contains("bound") ||
+            normalized.contains("complete") ||
+            normalized.contains("reachable") ||
+            normalized.contains("stale") ||
+            normalized.contains("delay") ||
+            normalized.contains("probe") ||
+            normalized.contains("offered") ||
+            normalized.contains("testing")
     }
 
     override fun onCleared() {

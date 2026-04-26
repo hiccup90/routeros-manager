@@ -41,12 +41,18 @@ import javax.inject.Singleton
 import kotlin.math.max
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.Deferred
 
 @Singleton
 class RouterOSRepository @Inject constructor(
     private val networkClient: NetworkClient,
     private val securePreferences: SecurePreferences
 ) {
+    @Volatile
+    private var networkDevicesWarning: String? = null
+
+    fun getNetworkDevicesWarning(): String? = networkDevicesWarning
+
     private val api: RouterOSApi
         get() = networkClient.getApi()
 
@@ -655,24 +661,35 @@ class RouterOSRepository @Inject constructor(
 
     // ===== 终端设备（合并）=====
     suspend fun getNetworkDevices(): Result<List<NetworkDevice>> = runCatching {
-        val leasesDeferred: kotlinx.coroutines.Deferred<List<DhcpLease>>
-        val arpDeferred: kotlinx.coroutines.Deferred<List<ArpEntry>>
-        val interfacesDeferred: kotlinx.coroutines.Deferred<List<InterfaceItem>>
-        val dhcpServersDeferred: kotlinx.coroutines.Deferred<List<DhcpServer>>
-        val ipv6NeighborsDeferred: kotlinx.coroutines.Deferred<List<Ipv6Neighbor>>
+        data class SourceLoad<T>(
+            val label: String,
+            val result: Result<List<T>>
+        )
+
+        val leasesDeferred: Deferred<SourceLoad<DhcpLease>>
+        val arpDeferred: Deferred<SourceLoad<ArpEntry>>
+        val interfacesDeferred: Deferred<SourceLoad<InterfaceItem>>
+        val dhcpServersDeferred: Deferred<SourceLoad<DhcpServer>>
+        val ipv6NeighborsDeferred: Deferred<SourceLoad<Ipv6Neighbor>>
         coroutineScope {
-            leasesDeferred = async { getDhcpLeases().getOrDefault(emptyList()) }
-            arpDeferred = async { getArpEntries().getOrDefault(emptyList()) }
-            interfacesDeferred = async { getInterfaces().getOrDefault(emptyList()) }
-            dhcpServersDeferred = async { getDhcpServers().getOrDefault(emptyList()) }
-            ipv6NeighborsDeferred = async { getIpv6Neighbors().getOrDefault(emptyList()) }
+            leasesDeferred = async { SourceLoad("DHCP", getDhcpLeases()) }
+            arpDeferred = async { SourceLoad("ARP", getArpEntries()) }
+            interfacesDeferred = async { SourceLoad("Interfaces", getInterfaces()) }
+            dhcpServersDeferred = async { SourceLoad("DHCP Servers", getDhcpServers()) }
+            ipv6NeighborsDeferred = async { SourceLoad("IPv6 邻居", getIpv6Neighbors()) }
         }
 
-        val leases = leasesDeferred.await()
-        val arpEntries = arpDeferred.await()
-        val interfaces = interfacesDeferred.await()
-        val dhcpServers = dhcpServersDeferred.await()
-        val ipv6Neighbors = ipv6NeighborsDeferred.await()
+        val leaseSource = leasesDeferred.await()
+        val arpSource = arpDeferred.await()
+        val interfaceSource = interfacesDeferred.await()
+        val dhcpServerSource = dhcpServersDeferred.await()
+        val ipv6NeighborSource = ipv6NeighborsDeferred.await()
+
+        val leases = leaseSource.result.getOrDefault(emptyList())
+        val arpEntries = arpSource.result.getOrDefault(emptyList())
+        val interfaces = interfaceSource.result.getOrDefault(emptyList())
+        val dhcpServers = dhcpServerSource.result.getOrDefault(emptyList())
+        val ipv6Neighbors = ipv6NeighborSource.result.getOrDefault(emptyList())
 
         data class DeviceAccumulator(
             val key: String,
@@ -777,6 +794,19 @@ class RouterOSRepository @Inject constructor(
             sanitize(neighbor.status).takeIf { it.isNotEmpty() }?.let(device.statuses::add)
             sanitize(neighbor.comment).takeIf { it.isNotEmpty() }?.let(device.comments::add)
             device.sources += "IPv6 邻居"
+        }
+
+        val sourceWarnings = listOf(leaseSource, arpSource, interfaceSource, dhcpServerSource, ipv6NeighborSource)
+            .mapNotNull { source ->
+                source.result.exceptionOrNull()?.message?.let { message ->
+                    "${source.label} 失败: $message"
+                }
+            }
+
+        val sourceSummary = "DHCP ${leases.size} / ARP ${arpEntries.size} / IPv6 ${ipv6Neighbors.size}"
+        networkDevicesWarning = when {
+            sourceWarnings.isNotEmpty() -> "设备列表可能不完整：$sourceSummary；${sourceWarnings.joinToString("；")}"
+            else -> null
         }
 
         deviceMap.values.map { device ->

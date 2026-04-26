@@ -1,6 +1,5 @@
 package com.routeros.manager.ui.home
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -77,21 +76,15 @@ fun HomeScreen(
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     LaunchedEffect(uiState.error) {
-        uiState.error?.let {
-            snackbarHostState.showSnackbar(it)
-        }
+        uiState.error?.let { snackbarHostState.showSnackbar(it) }
     }
 
     GlassScaffold(
-        topBar = {
-            GlassTitleBar(title = uiState.routerName)
-        },
+        topBar = { GlassTitleBar(title = uiState.routerName) },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Box(
@@ -100,70 +93,52 @@ fun HomeScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
-            Crossfade(targetState = !uiState.isConnected && !uiState.isLoading, label = "home-content") { showEmpty ->
-                if (showEmpty) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            Icons.Outlined.WifiOff, contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            "未连接到路由器",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            "请在设置中配置连接信息",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            val showEmpty = !uiState.isConnected && !uiState.isLoading
+            if (showEmpty) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        Icons.Outlined.WifiOff,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("未连接到路由器", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("请在设置中配置连接信息", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 12.dp)
+                ) {
+                    item {
+                        HomeSummaryCard(
+                            routerName = uiState.routerName,
+                            isConnected = uiState.isConnected,
+                            interfaceCount = uiState.interfaces.size,
+                            cpuLoad = uiState.cpuLoad,
+                            memoryPercent = uiState.memoryPercent,
+                            memoryUsed = uiState.memoryUsed,
+                            memoryTotal = uiState.memoryTotal,
+                            uptime = uiState.uptime,
+                            version = uiState.version
                         )
                     }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 20.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
+
+                    if (uiState.interfaces.isEmpty() && !uiState.isLoading) {
                         item {
-                            HomeOverviewCard(
-                                routerName = uiState.routerName,
-                                isConnected = uiState.isConnected,
-                                interfaceCount = uiState.interfaces.size
-                            )
+                            Text("暂无接口数据", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
+                    }
 
-                        item {
-                            SystemStatusCard(
-                                cpuLoad = uiState.cpuLoad,
-                                memoryPercent = uiState.memoryPercent,
-                                memoryUsed = uiState.memoryUsed,
-                                memoryTotal = uiState.memoryTotal,
-                                uptime = uiState.uptime,
-                                version = uiState.version
-                            )
-                        }
-
-
-                        if (uiState.interfaces.isEmpty() && !uiState.isLoading) {
-                            item {
-                                Text(
-                                    "暂无接口数据",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-
-                        items(uiState.interfaces, key = { it.id.ifBlank { it.name } }) { iface ->
-                            InterfaceCard(iface)
-                        }
+                    items(uiState.interfaces, key = { it.id.ifBlank { it.name } }) { iface ->
+                        InterfaceCard(iface)
                     }
                 }
             }
@@ -172,62 +147,84 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeOverviewCard(
+private fun HomeSummaryCard(
     routerName: String,
     isConnected: Boolean,
-    interfaceCount: Int
+    interfaceCount: Int,
+    cpuLoad: String,
+    memoryPercent: Int,
+    memoryUsed: Long,
+    memoryTotal: Long,
+    uptime: String,
+    version: String
 ) {
+    val cpuLoadPercent = remember(cpuLoad) { cpuLoad.toIntOrNull() ?: 0 }
+    val memoryUsedText = remember(memoryUsed) { formatBytes(memoryUsed) }
+    val memoryTotalText = remember(memoryTotal) { formatBytes(memoryTotal) }
+
     GlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 20.dp)
+                .padding(horizontal = 18.dp, vertical = 18.dp)
                 .animateGlassSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = "SYSTEM OVERVIEW",
-                style = MaterialTheme.typography.labelMedium,
-                color = PrimaryTeal
-            )
-            Text(
-                text = if (routerName.isBlank()) "RouterOS 控制台已就绪" else routerName,
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = if (isConnected) {
-                    "当前链路稳定，建议先查看 CPU / 内存，再观察高频接口速率。"
-                } else {
-                    "连接已中断，请先检查 REST 地址、凭据或证书配置。"
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                HomeOverviewPill(
-                    text = if (isConnected) "连接正常" else "连接中断",
-                    tint = if (isConnected) StatusSuccess else StatusError
-                )
-                HomeOverviewPill(text = "$interfaceCount 个接口", tint = SecondaryPurple)
-            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                OverviewMetricCard(
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = if (routerName.isBlank()) "RouterOS" else routerName,
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        HomeOverviewPill(
+                            text = if (isConnected) "在线" else "离线",
+                            tint = if (isConnected) StatusSuccess else StatusError
+                        )
+                        HomeOverviewPill(text = "$interfaceCount 个接口", tint = SecondaryPurple)
+                    }
+                }
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.24f)
+                ) {
+                    Text(
+                        text = version,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                StatusMetricPanel(
                     modifier = Modifier.weight(1f),
-                    label = "HEALTH",
-                    value = if (isConnected) "ONLINE" else "OFFLINE",
-                    accent = if (isConnected) StatusSuccess else StatusError
+                    label = "CPU",
+                    value = "$cpuLoad%",
+                    progress = cpuLoadPercent / 100f,
+                    accent = if (cpuLoadPercent > 80) StatusError else PrimaryTeal
                 )
-                OverviewMetricCard(
+                StatusMetricPanel(
                     modifier = Modifier.weight(1f),
-                    label = "INTERFACES",
-                    value = interfaceCount.toString(),
-                    accent = SecondaryPurple
+                    label = "内存",
+                    value = "$memoryPercent%",
+                    progress = memoryPercent / 100f,
+                    accent = if (memoryPercent > 80) StatusError else SecondaryPurple,
+                    supporting = "$memoryUsedText / $memoryTotalText"
                 )
             }
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+            Text(text = "运行时间：$uptime", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -239,103 +236,10 @@ private fun HomeOverviewPill(
 ) {
     Box(
         modifier = Modifier
-            .background(
-                color = tint.copy(alpha = 0.14f),
-                shape = RoundedCornerShape(999.dp)
-            )
+            .background(color = tint.copy(alpha = 0.14f), shape = RoundedCornerShape(999.dp))
             .padding(horizontal = 12.dp, vertical = 7.dp)
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-            color = tint
-        )
-    }
-}
-
-@Composable
-fun SystemStatusCard(
-    cpuLoad: String,
-    memoryPercent: Int,
-    memoryUsed: Long,
-    memoryTotal: Long,
-    uptime: String,
-    version: String
-) {
-    val cpuLoadPercent = remember(cpuLoad) { cpuLoad.toIntOrNull() ?: 0 }
-    val memoryUsedText = remember(memoryUsed) { formatBytes(memoryUsed) }
-    val memoryTotalText = remember(memoryTotal) { formatBytes(memoryTotal) }
-    GlassCard(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 18.dp, vertical = 18.dp)
-                .animateGlassSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                text = "SYSTEM HEALTH",
-                style = MaterialTheme.typography.labelMedium,
-                color = PrimaryTeal
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                StatusMetricPanel(
-                    modifier = Modifier.weight(1f),
-                    label = "CPU",
-                    value = "$cpuLoad%",
-                    progress = cpuLoadPercent / 100f,
-                    accent = if (cpuLoadPercent > 80) StatusError else PrimaryTeal
-                )
-                StatusMetricPanel(
-                    modifier = Modifier.weight(1f),
-                    label = "MEMORY",
-                    value = "$memoryPercent%",
-                    progress = memoryPercent / 100f,
-                    accent = if (memoryPercent > 80) StatusError else SecondaryPurple,
-                    supporting = "$memoryUsedText / $memoryTotalText"
-                )
-            }
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.72f))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                HomeOverviewPill(text = uptime, tint = PrimaryTealLight)
-                HomeOverviewPill(text = version, tint = SecondaryPurple)
-            }
-        }
-    }
-}
-
-@Composable
-private fun OverviewMetricCard(
-    modifier: Modifier = Modifier,
-    label: String,
-    value: String,
-    accent: androidx.compose.ui.graphics.Color
-) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(18.dp),
-        color = accent.copy(alpha = 0.12f)
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleLarge,
-                color = accent
-            )
-        }
+        Text(text = text, style = MaterialTheme.typography.labelMedium, color = tint)
     }
 }
 
@@ -355,18 +259,10 @@ private fun StatusMetricPanel(
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Text(text = label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = value, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
             LinearProgressIndicator(
                 progress = { progress.coerceIn(0f, 1f) },
                 modifier = Modifier
@@ -376,11 +272,7 @@ private fun StatusMetricPanel(
                 color = accent
             )
             supporting?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Text(text = it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -388,54 +280,50 @@ private fun StatusMetricPanel(
 
 @Composable
 fun InterfaceCard(iface: HomeViewModel.InterfaceUiModel) {
-    GlassCard(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 18.dp, vertical = 14.dp)
+                .padding(horizontal = 16.dp, vertical = 14.dp)
                 .animateGlassSize(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(
-                                if (iface.disabled) MaterialTheme.colorScheme.error
-                                else StatusSuccess
-                            )
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(if (iface.disabled) MaterialTheme.colorScheme.error else StatusSuccess)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = iface.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = if (iface.disabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                     Text(
-                        iface.name,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = if (iface.disabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+                        text = iface.ipv4Address,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = PrimaryTealLight
                     )
                 }
-            }
-
-            Column(horizontalAlignment = Alignment.End) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.ArrowDownward, null,
-                        modifier = Modifier.size(14.dp),
-                        tint = PrimaryTealLight
-                    )
-                    Text(iface.rxRate, style = MaterialTheme.typography.bodySmall, color = PrimaryTealLight)
-                }
-                Spacer(modifier = Modifier.height(2.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.ArrowUpward, null,
-                        modifier = Modifier.size(14.dp),
-                        tint = SecondaryPurple
-                    )
-                    Text(iface.txRate, style = MaterialTheme.typography.bodySmall, color = SecondaryPurple)
+                Column(horizontalAlignment = Alignment.End) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.ArrowDownward, null, modifier = Modifier.size(14.dp), tint = PrimaryTealLight)
+                        Text(iface.rxRate, style = MaterialTheme.typography.bodySmall, color = PrimaryTealLight)
+                    }
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.ArrowUpward, null, modifier = Modifier.size(14.dp), tint = SecondaryPurple)
+                        Text(iface.txRate, style = MaterialTheme.typography.bodySmall, color = SecondaryPurple)
+                    }
                 }
             }
         }

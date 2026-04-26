@@ -3,7 +3,6 @@ package com.routeros.manager.ui.terminal
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -99,19 +98,20 @@ fun TerminalScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(horizontal = 16.dp, vertical = 6.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SummaryCard(
                 deviceCount = uiState.devices.size,
                 query = uiState.query,
                 showOnlineOnly = uiState.showOnlineOnly,
                 isRefreshing = uiState.isRefreshing,
+                modifier = Modifier.fillMaxWidth()
             )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 GlassFilterChip(
                     selected = !uiState.showOnlineOnly,
@@ -140,68 +140,64 @@ fun TerminalScreen(
                         }
                     }
                 },
-                placeholder = { Text("按设备名 / IP / MAC / 接口搜索") }
+                placeholder = { Text("按设备名 / IP / MAC / 接口搜索") },
+                shape = RoundedCornerShape(16.dp)
             )
 
             Box(modifier = Modifier.fillMaxSize()) {
-                Crossfade(
-                    targetState = Triple(uiState.isLoading, uiState.isConfigured, uiState.devices.isEmpty()),
-                    label = "terminal-state"
-                ) { _ ->
-                    when {
-                        uiState.isLoading -> {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator()
+                when {
+                    uiState.isLoading -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
+
+                    !uiState.isConfigured -> {
+                        EmptyState(
+                            title = "未配置连接",
+                            message = uiState.error ?: "请先在设置中填写 RouterOS 地址、用户名和密码"
+                        )
+                    }
+
+                    uiState.devices.isEmpty() -> {
+                        EmptyState(
+                            title = if (uiState.query.isBlank()) "暂无设备" else "未找到匹配设备",
+                            message = uiState.error ?: if (uiState.query.isBlank()) {
+                                "当前列表基于 DHCP、ARP、IPv6 邻居和接口流量数据"
+                            } else {
+                                "请尝试更换搜索关键词"
                             }
-                        }
+                        )
+                    }
 
-                        !uiState.isConfigured -> {
-                            EmptyState(
-                                title = "未配置连接",
-                                message = uiState.error ?: "请先在设置中填写 RouterOS 地址、用户名和密码"
-                            )
-                        }
-
-                        uiState.devices.isEmpty() -> {
-                            EmptyState(
-                                title = if (uiState.query.isBlank()) "暂无设备" else "未找到匹配设备",
-                                message = uiState.error ?: if (uiState.query.isBlank()) {
-                                    "当前列表基于 DHCP、ARP、IPv6 邻居和接口流量数据"
-                                } else {
-                                    "请尝试更换搜索关键词"
-                                }
-                            )
-                        }
-
-                        else -> {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(bottom = 24.dp),
-                                verticalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                item {
-                                    uiState.error?.let {
-                                        Text(
-                                            text = it,
-                                            color = MaterialTheme.colorScheme.error,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            modifier = Modifier.padding(bottom = 4.dp)
-                                        )
-                                    }
-                                }
-                                items(uiState.devices, key = { it.key }) { device ->
-                                    val expanded = expandedMap[device.key] ?: false
-                                    DeviceCard(
-                                        device = device,
-                                        expanded = expanded,
-                                        onToggle = {
-                                            val nextExpanded = !expanded
-                                            expandedMap[device.key] = nextExpanded
-                                            viewModel.setDeviceExpanded(device.key, nextExpanded)
-                                        },
-                                        onOpenNetworkConfig = onOpenNetworkConfig
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = 18.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            item {
+                                uiState.error?.let {
+                                    Text(
+                                        text = it,
+                                        color = MaterialTheme.colorScheme.error,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        modifier = Modifier.padding(bottom = 4.dp)
                                     )
                                 }
+                            }
+                            items(uiState.devices, key = { it.key }) { device ->
+                                val expanded = expandedMap[device.key] ?: false
+                                DeviceCard(
+                                    device = device,
+                                    expanded = expanded,
+                                    onToggle = {
+                                        val nextExpanded = !expanded
+                                        expandedMap[device.key] = nextExpanded
+                                        viewModel.setDeviceExpanded(device.key, nextExpanded)
+                                    },
+                                    onOpenNetworkConfig = onOpenNetworkConfig
+                                )
                             }
                         }
                     }
@@ -216,34 +212,40 @@ private fun SummaryCard(
     deviceCount: Int,
     query: String,
     showOnlineOnly: Boolean,
-    isRefreshing: Boolean
+    isRefreshing: Boolean,
+    modifier: Modifier = Modifier
 ) {
-    GlassCard(modifier = Modifier.fillMaxWidth()) {
+    GlassCard(modifier = modifier) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 18.dp, vertical = 18.dp)
+                .padding(horizontal = 16.dp, vertical = 14.dp)
                 .animateGlassSize(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
                         text = "DEVICE CONSOLE",
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelSmall,
                         color = PrimaryTeal
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Devices, contentDescription = null, tint = PrimaryTeal)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("在线设备", style = MaterialTheme.typography.titleLarge)
+                        Icon(
+                            Icons.Default.Devices,
+                            contentDescription = null,
+                            tint = PrimaryTeal,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("设备总览", style = MaterialTheme.typography.titleMedium)
                     }
                 }
                 if (isRefreshing) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                 }
             }
             Text(
@@ -255,13 +257,13 @@ private fun SummaryCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.24f)
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
             ) {
                 Text(
                     text = if (query.isBlank()) "按设备名、IP、MAC 或接口快速定位终端。" else "当前已启用关键词过滤，可继续缩小设备范围。",
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -283,40 +285,40 @@ private fun DeviceCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onToggle)
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                    .padding(horizontal = 14.dp, vertical = 11.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(12.dp),
                     color = accent.copy(alpha = 0.14f)
                 ) {
                     Box(
                         modifier = Modifier
-                            .padding(horizontal = 12.dp, vertical = 10.dp)
-                            .size(10.dp)
+                            .padding(horizontal = 10.dp, vertical = 8.dp)
+                            .size(8.dp)
                             .clip(CircleShape)
                             .background(accent)
                     )
                 }
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Spacer(modifier = Modifier.width(10.dp))
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
                         text = device.displayName,
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = device.primaryAddress,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         color = PrimaryTealLight,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     SourceChips(device.sources)
                 }
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(8.dp))
                 Icon(
                     imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                     contentDescription = if (expanded) "收起" else "展开",
@@ -332,16 +334,16 @@ private fun DeviceCard(
                 Column {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
                     Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        modifier = Modifier.padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+                            shape = RoundedCornerShape(14.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.18f)
                         ) {
                             Column(
-                                modifier = Modifier.padding(14.dp),
-                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                                modifier = Modifier.padding(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 DetailLine("MAC", device.macAddress)
                                 DetailLine("IPv6", device.ipv6Display)
@@ -417,7 +419,7 @@ private fun TrafficSection(device: TerminalDeviceUiModel) {
 @Composable
 private fun SourceChips(sources: List<String>) {
     if (sources.isEmpty()) return
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         sources.take(3).forEach { source ->
             Surface(
                 shape = RoundedCornerShape(999.dp),
@@ -425,7 +427,7 @@ private fun SourceChips(sources: List<String>) {
             ) {
                 Text(
                     text = source,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )

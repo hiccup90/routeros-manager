@@ -38,6 +38,7 @@ class SecurePreferences @Inject constructor(
         private const val KEY_CONNECTED = "is_connected"
         private const val KEY_LAST_CONNECTED = "last_connected"
         private const val KEY_HOME_INTERFACES = "home_interfaces"
+        private const val KEY_HOME_INTERFACE_ORDER = "home_interface_order"
     }
 
     var host: String
@@ -90,6 +91,23 @@ class SecurePreferences @Inject constructor(
     var homeInterfaceNames: Set<String>
         get() = sharedPreferences.getStringSet(KEY_HOME_INTERFACES, emptySet()) ?: emptySet()
         set(value) = sharedPreferences.edit().putStringSet(KEY_HOME_INTERFACES, value).apply()
+
+    var homeInterfaceOrder: List<String>
+        get() {
+            val stored = sharedPreferences.getString(KEY_HOME_INTERFACE_ORDER, null)
+                ?.split("\n")
+                ?.map { it.trim() }
+                ?.filter { it.isNotEmpty() }
+                .orEmpty()
+            return if (stored.isNotEmpty()) stored else homeInterfaceNames.toList()
+        }
+        set(value) {
+            val cleaned = value.map { it.trim() }.filter { it.isNotEmpty() }.distinct()
+            sharedPreferences.edit()
+                .putString(KEY_HOME_INTERFACE_ORDER, cleaned.joinToString("\n"))
+                .putStringSet(KEY_HOME_INTERFACES, cleaned.toSet())
+                .apply()
+        }
 
     fun clearAll() {
         sharedPreferences.edit().clear().apply()

@@ -6,11 +6,11 @@ import com.routeros.manager.data.api.NetworkClient
 import com.routeros.manager.data.preferences.SecurePreferences
 import com.routeros.manager.data.repository.RouterOSRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class SettingsUiState(
     val host: String = "",
@@ -23,7 +23,7 @@ data class SettingsUiState(
     val error: String? = null,
     val successMessage: String? = null,
     val availableInterfaces: List<String> = emptyList(),
-    val selectedInterfaces: Set<String> = emptySet(),
+    val selectedInterfaces: List<String> = emptyList(),
     val isLoadingInterfaces: Boolean = false
 )
 
@@ -49,7 +49,7 @@ class SettingsViewModel @Inject constructor(
             password = securePreferences.password,
             displayMode = securePreferences.displayMode,
             isConnected = securePreferences.isConnected,
-            selectedInterfaces = securePreferences.homeInterfaceNames
+            selectedInterfaces = securePreferences.homeInterfaceOrder
         )
         if (securePreferences.isConnected) {
             loadInterfaces()
@@ -169,23 +169,16 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private fun normalizePort(port: Int): Int? {
-        return port.takeIf { it in 1..65535 }
-    }
+    private fun normalizePort(port: Int): Int? = port.takeIf { it in 1..65535 }
 
     fun clearMessages() {
-        _uiState.value = _uiState.value.copy(
-            error = null,
-            successMessage = null
-        )
+        _uiState.value = _uiState.value.copy(error = null, successMessage = null)
     }
 
     fun clearAllData() {
         securePreferences.clearAll()
         loadSettings()
-        _uiState.value = _uiState.value.copy(
-            successMessage = "所有数据已清除"
-        )
+        _uiState.value = _uiState.value.copy(successMessage = "所有数据已清除")
     }
 
     fun loadInterfaces() {
@@ -196,9 +189,9 @@ class SettingsViewModel @Inject constructor(
             if (result.isSuccess) {
                 val names = result.getOrDefault(emptyList()).map { it.name }.sorted()
                 val availableSet = names.toSet()
-                val cleanedSelection = _uiState.value.selectedInterfaces.intersect(availableSet)
-                if (cleanedSelection != securePreferences.homeInterfaceNames) {
-                    securePreferences.homeInterfaceNames = cleanedSelection
+                val cleanedSelection = _uiState.value.selectedInterfaces.filter { it in availableSet }
+                if (cleanedSelection != securePreferences.homeInterfaceOrder) {
+                    securePreferences.homeInterfaceOrder = cleanedSelection
                 }
                 _uiState.value = _uiState.value.copy(
                     availableInterfaces = names,
@@ -215,24 +208,36 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun toggleInterface(name: String) {
-        val current = _uiState.value.selectedInterfaces.toMutableSet()
+        val current = _uiState.value.selectedInterfaces.toMutableList()
         if (current.contains(name)) {
             current.remove(name)
         } else {
             current.add(name)
         }
         _uiState.value = _uiState.value.copy(selectedInterfaces = current)
-        securePreferences.homeInterfaceNames = current
+        securePreferences.homeInterfaceOrder = current
+    }
+
+    fun moveInterface(name: String, offset: Int) {
+        val current = _uiState.value.selectedInterfaces.toMutableList()
+        val index = current.indexOf(name)
+        if (index == -1) return
+        val target = (index + offset).coerceIn(0, current.lastIndex)
+        if (target == index) return
+        current.removeAt(index)
+        current.add(target, name)
+        _uiState.value = _uiState.value.copy(selectedInterfaces = current)
+        securePreferences.homeInterfaceOrder = current
     }
 
     fun selectAllInterfaces() {
-        val all = _uiState.value.availableInterfaces.toSet()
+        val all = _uiState.value.availableInterfaces
         _uiState.value = _uiState.value.copy(selectedInterfaces = all)
-        securePreferences.homeInterfaceNames = all
+        securePreferences.homeInterfaceOrder = all
     }
 
     fun clearInterfaceSelection() {
-        _uiState.value = _uiState.value.copy(selectedInterfaces = emptySet())
-        securePreferences.homeInterfaceNames = emptySet()
+        _uiState.value = _uiState.value.copy(selectedInterfaces = emptyList())
+        securePreferences.homeInterfaceOrder = emptyList()
     }
 }

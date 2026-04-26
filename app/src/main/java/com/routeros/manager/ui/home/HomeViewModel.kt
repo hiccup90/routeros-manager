@@ -3,9 +3,11 @@ package com.routeros.manager.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.routeros.manager.data.api.InterfaceItem
+import com.routeros.manager.data.api.IpAddress
 import com.routeros.manager.data.preferences.SecurePreferences
 import com.routeros.manager.data.repository.RouterOSRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -17,7 +19,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
-import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -45,6 +46,7 @@ class HomeViewModel @Inject constructor(
         val name: String,
         val type: String,
         val disabled: Boolean,
+        val ipv4Address: String,
         val rxRate: String,
         val txRate: String,
         val rxBytes: Long,
@@ -98,7 +100,13 @@ class HomeViewModel @Inject constructor(
                     val identityDeferred = async { repository.getSystemIdentity() }
                     val resourceDeferred = async { repository.getSystemResource() }
                     val interfacesDeferred = async { repository.getInterfaces() }
-                    Triple(identityDeferred.await(), resourceDeferred.await(), interfacesDeferred.await())
+                    val ipAddressesDeferred = async { repository.getIpAddresses() }
+                    HomeRefreshResults(
+                        identityDeferred.await(),
+                        resourceDeferred.await(),
+                        interfacesDeferred.await(),
+                        ipAddressesDeferred.await()
+                    )
                 }
             }
 
@@ -114,21 +122,20 @@ class HomeViewModel @Inject constructor(
                 return@launch
             }
 
-            val (identityResult, resourceResult, interfacesResult) = results
-            if (resourceResult.isFailure) {
+            if (results.resourceResult.isFailure) {
                 securePreferences.isConnected = false
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = "连接失败: ${resourceResult.exceptionOrNull()?.message ?: "未知错误"}",
+                        error = "连接失败: ${results.resourceResult.exceptionOrNull()?.message ?: "未知错误"}",
                         isConnected = false
                     )
                 }
                 return@launch
             }
 
-            val identity = identityResult.getOrNull()
-            val resource = resourceResult.getOrNull()
+            val identity = results.identityResult.getOrNull()
+            val resource = results.resourceResult.getOrNull()
             if (resource == null) {
                 securePreferences.isConnected = false
                 _uiState.update {
@@ -137,10 +144,11 @@ class HomeViewModel @Inject constructor(
                 return@launch
             }
 
-            val interfaces = if (interfacesResult.isSuccess) {
-                val all = interfacesResult.getOrDefault(emptyList())
-                val filtered = filterHomeInterfaces(all)
-                calculateInterfaceRates(filtered)
+            val interfaces = if (results.interfacesResult.isSuccess) {
+                val allInterfaces = results.interfacesResult.getOrDefault(emptyList())
+                val filtered = filterAndOrderHomeInterfaces(allInterfaces)
+                val ipByInterface = buildIpAddressMap(results.ipAddressesResult.getOrDefault(emptyList()))
+                calculateInterfaceRates(filtered, ipByInterface).take(3)
             } else {
                 emptyList()
             }
@@ -163,26 +171,44 @@ class HomeViewModel @Inject constructor(
                     boardName = resource.boardName.ifBlank { "---" },
                     interfaces = interfaces,
                     isLoading = false,
-                    error = interfacesResult.exceptionOrNull()?.message,
+                    error = firstError(listOf(results.interfacesResult, results.ipAddressesResult)),
                     isConnected = true
                 )
             }
         }
     }
 
-    private fun filterHomeInterfaces(interfaces: List<InterfaceItem>): List<InterfaceItem> {
-        val selected = securePreferences.homeInterfaceNames
-        if (selected.isEmpty()) return interfaces
-        return interfaces.filter { it.name in selected }
+    private fun filterAndOrderHomeInterfaces(interfaces: List<InterfaceItem>): List<InterfaceItem> {
+        val order = securePreferences.homeInterfaceOrder
+        val selected = if (order.isNotEmpty()) order else securePreferences.homeInterfaceNames.toList()
+        if (selected.isEmpty()) {
+            return interfaces.sortedBy { it.name }.take(3)
+        }
+        val byName = interfaces.associateBy { it.name }
+        return selected.mapNotNull(byName::get)
     }
 
-    private fun calculateInterfaceRates(interfaces: List<InterfaceItem>): List<InterfaceUiModel> {
+    private fun buildIpAddressMap(addresses: List<IpAddress>): Map<String, String> {
+        return addresses
+            .filter { it.disabled != "true" }
+            .groupBy { it.interface_ }
+            .mapValues { (_, items) ->
+                items.firstOrNull { it.dynamic != "true" }?.address?.substringBefore("/")
+                    ?: items.firstOrNull()?.address?.substringBefore("/")
+                    ?: "--"
+            }
+    }
+
+    private fun calculateInterfaceRates(
+        interfaces: List<InterfaceItem>,
+        ipByInterface: Map<String, String>
+    ): List<InterfaceUiModel> {
         return interfaces.map { iface ->
             val prev = previousInterfaceBytes[iface.name]
             val rxCurrent = iface.rxByte.toLongOrNull() ?: 0L
             val txCurrent = iface.txByte.toLongOrNull() ?: 0L
-            val rxDiff = if (prev != null) rxCurrent - prev.first else 0L
-            val txDiff = if (prev != null) txCurrent - prev.second else 0L
+            val rxDiff = if (prev != null) (rxCurrent - prev.first).coerceAtLeast(0L) else 0L
+            val txDiff = if (prev != null) (txCurrent - prev.second).coerceAtLeast(0L) else 0L
 
             previousInterfaceBytes[iface.name] = rxCurrent to txCurrent
 
@@ -191,6 +217,7 @@ class HomeViewModel @Inject constructor(
                 name = iface.name,
                 type = iface.type,
                 disabled = iface.disabled == "true",
+                ipv4Address = ipByInterface[iface.name] ?: "--",
                 rxRate = formatRate(rxDiff / 3),
                 txRate = formatRate(txDiff / 3),
                 rxBytes = rxCurrent,
@@ -199,8 +226,13 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    private fun firstError(results: List<Result<*>>): String? {
+        return results.firstNotNullOfOrNull { it.exceptionOrNull()?.message }
+    }
+
     private fun formatRate(bytesPerSec: Long): String {
         return when {
+            bytesPerSec <= 0L -> "0 B/s"
             bytesPerSec < 1024 -> "$bytesPerSec B/s"
             bytesPerSec < 1024 * 1024 -> String.format("%.1f KB/s", bytesPerSec / 1024.0)
             bytesPerSec < 1024 * 1024 * 1024 -> String.format("%.2f MB/s", bytesPerSec / (1024.0 * 1024))
@@ -230,3 +262,10 @@ class HomeViewModel @Inject constructor(
         stopPolling()
     }
 }
+
+private data class HomeRefreshResults(
+    val identityResult: Result<com.routeros.manager.data.api.SystemIdentity>,
+    val resourceResult: Result<com.routeros.manager.data.api.SystemResource>,
+    val interfacesResult: Result<List<InterfaceItem>>,
+    val ipAddressesResult: Result<List<IpAddress>>
+)
