@@ -19,6 +19,7 @@ class DhcpLeaseListViewModel @Inject constructor(
 
     data class LeaseItem(
         val id: String,
+        val searchKey: String,
         val address: String,
         val macAddress: String,
         val displayName: String,
@@ -188,10 +189,7 @@ class DhcpLeaseListViewModel @Inject constructor(
     private fun filterItems(items: List<LeaseItem>, query: String): List<LeaseItem> {
         val keyword = query.trim().lowercase()
         if (keyword.isEmpty()) return items
-        return items.filter { item ->
-            listOf(item.displayName, item.address, item.macAddress, item.server, item.comment, item.hostname, item.activeHostName)
-                .any { candidate -> candidate.lowercase().contains(keyword) }
-        }
+        return items.filter { item -> item.searchKey.contains(keyword) }
     }
 
     private fun sameSubnet(ipAddress: String, cidr: String): Boolean {
@@ -225,6 +223,9 @@ class DhcpLeaseListViewModel @Inject constructor(
         }
         return LeaseItem(
             id = id,
+            searchKey = listOf(displayName, address, macAddress, server, comment, hostname, activeHostName)
+                .joinToString("\n")
+                .lowercase(),
             address = address,
             macAddress = macAddress,
             displayName = displayName,

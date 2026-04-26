@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
@@ -246,8 +247,11 @@ private fun HubScreen(
                 }
             }
 
-            items(entries.size) { index ->
-                HubEntryCard(item = entries[index])
+            items(
+                items = entries,
+                key = { entry -> entry.title }
+            ) { entry ->
+                HubEntryCard(item = entry)
             }
 
             item {

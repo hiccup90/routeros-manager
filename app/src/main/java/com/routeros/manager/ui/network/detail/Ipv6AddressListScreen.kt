@@ -23,6 +23,7 @@ fun Ipv6AddressListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    var pendingDeleteId by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(uiState.error) { uiState.error?.let { snackbarHostState.showSnackbar(it) } }
 
     Scaffold(
@@ -51,7 +52,6 @@ fun Ipv6AddressListScreen(
                     }
                 else -> LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(uiState.items, key = { it.id }) { item ->
-                        var showDelete by remember { mutableStateOf(false) }
                         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)),
                             onClick = { viewModel.showEditDialog(item) }) {
                             Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -62,18 +62,22 @@ fun Ipv6AddressListScreen(
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Switch(checked = !item.disabled, onCheckedChange = { viewModel.toggleEnable(item.id, item.disabled) }, modifier = Modifier.scale(0.8f))
-                                    IconButton(onClick = { showDelete = true }) { Icon(Icons.Default.Delete, "删除", tint = MaterialTheme.colorScheme.error) }
+                                    IconButton(onClick = { pendingDeleteId = item.id }) { Icon(Icons.Default.Delete, "删除", tint = MaterialTheme.colorScheme.error) }
                                 }
                             }
-                        }
-                        if (showDelete) {
-                            AlertDialog(onDismissRequest = { showDelete = false }, title = { Text("确认删除") }, text = { Text("确定要删除此 IPv6 地址吗？") },
-                                confirmButton = { TextButton(onClick = { showDelete = false; viewModel.delete(item.id) }) { Text("删除", color = MaterialTheme.colorScheme.error) } },
-                                dismissButton = { TextButton(onClick = { showDelete = false }) { Text("取消") } })
                         }
                     }
                 }
             }
+        }
+        pendingDeleteId?.let { deletingId ->
+            AlertDialog(
+                onDismissRequest = { pendingDeleteId = null },
+                title = { Text("确认删除") },
+                text = { Text("确定要删除此 IPv6 地址吗？") },
+                confirmButton = { TextButton(onClick = { pendingDeleteId = null; viewModel.delete(deletingId) }) { Text("删除", color = MaterialTheme.colorScheme.error) } },
+                dismissButton = { TextButton(onClick = { pendingDeleteId = null }) { Text("取消") } }
+            )
         }
         if (uiState.showAddDialog) {
             var address by remember { mutableStateOf("") }
@@ -101,10 +105,10 @@ fun Ipv6AddressListScreen(
         }
         if (uiState.showEditDialog && uiState.editingItem != null) {
             val item = uiState.editingItem!!
-            var address by remember { mutableStateOf(item.address) }
-            var selectedIface by remember { mutableStateOf(item.interface_) }
-            var comment by remember { mutableStateOf(item.comment) }
-            var expanded by remember { mutableStateOf(false) }
+            var address by remember(item.id) { mutableStateOf(item.address) }
+            var selectedIface by remember(item.id) { mutableStateOf(item.interface_) }
+            var comment by remember(item.id) { mutableStateOf(item.comment) }
+            var expanded by remember(item.id) { mutableStateOf(false) }
             AlertDialog(onDismissRequest = { viewModel.hideEditDialog() }, title = { Text("编辑 IPv6 地址") },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {

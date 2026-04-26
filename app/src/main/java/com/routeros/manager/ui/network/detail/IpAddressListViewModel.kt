@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.routeros.manager.data.api.IpAddress
 import com.routeros.manager.data.repository.RouterOSRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,17 +40,22 @@ class IpAddressListViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+    private var loadJob: Job? = null
 
     init {
         if (repository.isConfigured()) loadData()
     }
 
     fun loadData() {
-        viewModelScope.launch {
+        if (loadJob?.isActive == true) return
+        loadJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            val addrResult = repository.getIpAddresses()
-            val ifaceResult = repository.getInterfaces()
+            val (addrResult, ifaceResult) = coroutineScope {
+                val addrDeferred = async { repository.getIpAddresses() }
+                val ifaceDeferred = async { repository.getInterfaces() }
+                addrDeferred.await() to ifaceDeferred.await()
+            }
 
             if (addrResult.isFailure) {
                 _uiState.update {

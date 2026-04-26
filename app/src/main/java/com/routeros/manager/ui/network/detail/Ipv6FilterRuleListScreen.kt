@@ -38,6 +38,7 @@ fun Ipv6FilterRuleListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    var pendingDeleteId by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(uiState.error) { uiState.error?.let { snackbarHostState.showSnackbar(it) } }
 
     Scaffold(
@@ -64,7 +65,9 @@ fun Ipv6FilterRuleListScreen(
                 }
                 else -> LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(uiState.items, key = { it.id }) { item ->
-                        var showDelete by remember { mutableStateOf(false) }
+                        val subtitle = remember(item.id, item.srcAddress, item.dstAddress) {
+                            listOfNotNull(item.srcAddress.ifBlank { null }, item.dstAddress.ifBlank { null }).joinToString(" | ")
+                        }
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)),
@@ -73,28 +76,28 @@ fun Ipv6FilterRuleListScreen(
                             Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text("${item.chain} → ${item.action}", style = MaterialTheme.typography.bodyLarge)
-                                    val subtitle = listOfNotNull(item.srcAddress.ifBlank { null }, item.dstAddress.ifBlank { null }).joinToString(" | ")
                                     if (subtitle.isNotEmpty()) Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     if (item.comment.isNotEmpty()) Text(item.comment, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Switch(checked = !item.disabled, onCheckedChange = { viewModel.toggleEnable(item.id, item.disabled) }, modifier = Modifier.scale(0.8f))
-                                    IconButton(onClick = { showDelete = true }) { Icon(Icons.Default.Delete, "删除", tint = MaterialTheme.colorScheme.error) }
+                                    IconButton(onClick = { pendingDeleteId = item.id }) { Icon(Icons.Default.Delete, "删除", tint = MaterialTheme.colorScheme.error) }
                                 }
                             }
-                        }
-                        if (showDelete) {
-                            AlertDialog(
-                                onDismissRequest = { showDelete = false },
-                                title = { Text("确认删除") },
-                                text = { Text("确定要删除此 IPv6 Filter 规则吗？") },
-                                confirmButton = { TextButton(onClick = { showDelete = false; viewModel.delete(item.id) }) { Text("删除", color = MaterialTheme.colorScheme.error) } },
-                                dismissButton = { TextButton(onClick = { showDelete = false }) { Text("取消") } }
-                            )
                         }
                     }
                 }
             }
+        }
+
+        pendingDeleteId?.let { deletingId ->
+            AlertDialog(
+                onDismissRequest = { pendingDeleteId = null },
+                title = { Text("确认删除") },
+                text = { Text("确定要删除此 IPv6 Filter 规则吗？") },
+                confirmButton = { TextButton(onClick = { pendingDeleteId = null; viewModel.delete(deletingId) }) { Text("删除", color = MaterialTheme.colorScheme.error) } },
+                dismissButton = { TextButton(onClick = { pendingDeleteId = null }) { Text("取消") } }
+            )
         }
 
         if (uiState.showAddDialog) {
@@ -134,13 +137,13 @@ fun Ipv6FilterRuleListScreen(
 
         if (uiState.showEditDialog && uiState.editingItem != null) {
             val item = uiState.editingItem!!
-            var chain by remember { mutableStateOf(item.chain) }
-            var action by remember { mutableStateOf(item.action) }
-            var srcAddress by remember { mutableStateOf(item.srcAddress) }
-            var dstAddress by remember { mutableStateOf(item.dstAddress) }
-            var comment by remember { mutableStateOf(item.comment) }
-            var chainExpanded by remember { mutableStateOf(false) }
-            var actionExpanded by remember { mutableStateOf(false) }
+            var chain by remember(item.id) { mutableStateOf(item.chain) }
+            var action by remember(item.id) { mutableStateOf(item.action) }
+            var srcAddress by remember(item.id) { mutableStateOf(item.srcAddress) }
+            var dstAddress by remember(item.id) { mutableStateOf(item.dstAddress) }
+            var comment by remember(item.id) { mutableStateOf(item.comment) }
+            var chainExpanded by remember(item.id) { mutableStateOf(false) }
+            var actionExpanded by remember(item.id) { mutableStateOf(false) }
             AlertDialog(
                 onDismissRequest = { viewModel.hideEditDialog() },
                 title = { Text("编辑 IPv6 Filter 规则") },

@@ -23,6 +23,7 @@ fun FilterRuleListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    var pendingDeleteId by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(uiState.error) { uiState.error?.let { snackbarHostState.showSnackbar(it) } }
 
     Scaffold(
@@ -51,30 +52,35 @@ fun FilterRuleListScreen(
                     }
                 else -> LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(uiState.items, key = { it.id }) { item ->
-                        var showDelete by remember { mutableStateOf(false) }
+                        val subtitle = remember(item.id, item.protocol, item.srcAddress, item.dstAddress) {
+                            listOfNotNull(item.protocol.ifBlank { null }, item.srcAddress.ifBlank { null }, item.dstAddress.ifBlank { null }).joinToString(" | ")
+                        }
                         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)),
                             onClick = { viewModel.showEditDialog(item) }) {
                             Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text("${item.chain} → ${item.action}", style = MaterialTheme.typography.bodyLarge, color = if (item.disabled) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.5f) else MaterialTheme.colorScheme.onSurface)
-                                    val subtitle = listOfNotNull(item.protocol.ifBlank { null }, item.srcAddress.ifBlank { null }, item.dstAddress.ifBlank { null }).joinToString(" | ")
                                     if (subtitle.isNotEmpty()) Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     if (item.comment.isNotEmpty()) Text(item.comment, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Switch(checked = !item.disabled, onCheckedChange = { viewModel.toggleEnable(item.id, item.disabled) }, modifier = Modifier.scale(0.8f))
-                                    IconButton(onClick = { showDelete = true }) { Icon(Icons.Default.Delete, "删除", tint = MaterialTheme.colorScheme.error) }
+                                    IconButton(onClick = { pendingDeleteId = item.id }) { Icon(Icons.Default.Delete, "删除", tint = MaterialTheme.colorScheme.error) }
                                 }
                             }
-                        }
-                        if (showDelete) {
-                            AlertDialog(onDismissRequest = { showDelete = false }, title = { Text("确认删除") }, text = { Text("确定要删除此过滤规则吗？") },
-                                confirmButton = { TextButton(onClick = { showDelete = false; viewModel.delete(item.id) }) { Text("删除", color = MaterialTheme.colorScheme.error) } },
-                                dismissButton = { TextButton(onClick = { showDelete = false }) { Text("取消") } })
                         }
                     }
                 }
             }
+        }
+        pendingDeleteId?.let { deletingId ->
+            AlertDialog(
+                onDismissRequest = { pendingDeleteId = null },
+                title = { Text("确认删除") },
+                text = { Text("确定要删除此过滤规则吗？") },
+                confirmButton = { TextButton(onClick = { pendingDeleteId = null; viewModel.delete(deletingId) }) { Text("删除", color = MaterialTheme.colorScheme.error) } },
+                dismissButton = { TextButton(onClick = { pendingDeleteId = null }) { Text("取消") } }
+            )
         }
         if (uiState.showAddDialog) {
             var chain by remember { mutableStateOf("input") }
@@ -113,12 +119,12 @@ fun FilterRuleListScreen(
         }
         if (uiState.showEditDialog && uiState.editingItem != null) {
             val item = uiState.editingItem!!
-            var chain by remember { mutableStateOf(item.chain) }
-            var action by remember { mutableStateOf(item.action) }
-            var protocol by remember { mutableStateOf(item.protocol) }
-            var comment by remember { mutableStateOf(item.comment) }
-            var chainExpanded by remember { mutableStateOf(false) }
-            var actionExpanded by remember { mutableStateOf(false) }
+            var chain by remember(item.id) { mutableStateOf(item.chain) }
+            var action by remember(item.id) { mutableStateOf(item.action) }
+            var protocol by remember(item.id) { mutableStateOf(item.protocol) }
+            var comment by remember(item.id) { mutableStateOf(item.comment) }
+            var chainExpanded by remember(item.id) { mutableStateOf(false) }
+            var actionExpanded by remember(item.id) { mutableStateOf(false) }
             AlertDialog(onDismissRequest = { viewModel.hideEditDialog() }, title = { Text("编辑过滤规则") },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

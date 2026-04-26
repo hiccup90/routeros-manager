@@ -39,6 +39,8 @@ import com.routeros.manager.data.preferences.SecurePreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.max
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 @Singleton
 class RouterOSRepository @Inject constructor(
@@ -653,11 +655,24 @@ class RouterOSRepository @Inject constructor(
 
     // ===== 终端设备（合并）=====
     suspend fun getNetworkDevices(): Result<List<NetworkDevice>> = runCatching {
-        val leases = getDhcpLeases().getOrDefault(emptyList())
-        val arpEntries = getArpEntries().getOrDefault(emptyList())
-        val interfaces = getInterfaces().getOrDefault(emptyList())
-        val dhcpServers = getDhcpServers().getOrDefault(emptyList())
-        val ipv6Neighbors = getIpv6Neighbors().getOrDefault(emptyList())
+        val leasesDeferred: kotlinx.coroutines.Deferred<List<DhcpLease>>
+        val arpDeferred: kotlinx.coroutines.Deferred<List<ArpEntry>>
+        val interfacesDeferred: kotlinx.coroutines.Deferred<List<InterfaceItem>>
+        val dhcpServersDeferred: kotlinx.coroutines.Deferred<List<DhcpServer>>
+        val ipv6NeighborsDeferred: kotlinx.coroutines.Deferred<List<Ipv6Neighbor>>
+        coroutineScope {
+            leasesDeferred = async { getDhcpLeases().getOrDefault(emptyList()) }
+            arpDeferred = async { getArpEntries().getOrDefault(emptyList()) }
+            interfacesDeferred = async { getInterfaces().getOrDefault(emptyList()) }
+            dhcpServersDeferred = async { getDhcpServers().getOrDefault(emptyList()) }
+            ipv6NeighborsDeferred = async { getIpv6Neighbors().getOrDefault(emptyList()) }
+        }
+
+        val leases = leasesDeferred.await()
+        val arpEntries = arpDeferred.await()
+        val interfaces = interfacesDeferred.await()
+        val dhcpServers = dhcpServersDeferred.await()
+        val ipv6Neighbors = ipv6NeighborsDeferred.await()
 
         data class DeviceAccumulator(
             val key: String,

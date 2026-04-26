@@ -81,6 +81,7 @@ class TerminalViewModel @Inject constructor(
     val uiState: StateFlow<TerminalUiState> = _uiState.asStateFlow()
 
     private var pollingJob: Job? = null
+    private var loadJob: Job? = null
     private val trafficPollingJobs = mutableMapOf<String, Job>()
     private val expandedDeviceKeys = mutableSetOf<String>()
 
@@ -125,7 +126,10 @@ class TerminalViewModel @Inject constructor(
     }
 
     fun refresh() {
-        loadDevices(forceRefresh = true)
+        if (loadJob?.isActive == true) return
+        loadJob = viewModelScope.launch {
+            loadDevices(forceRefresh = true)
+        }
     }
 
     fun setDeviceExpanded(deviceKey: String, expanded: Boolean) {
@@ -149,7 +153,7 @@ class TerminalViewModel @Inject constructor(
         }
     }
 
-    private fun loadDevices(forceRefresh: Boolean = false) {
+    private suspend fun loadDevices(forceRefresh: Boolean = false) {
         if (!repository.isConfigured()) {
             _uiState.update {
                 it.copy(
@@ -162,58 +166,56 @@ class TerminalViewModel @Inject constructor(
             return
         }
 
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isLoading = contentState.value.devices.isEmpty() && !forceRefresh,
-                    isRefreshing = forceRefresh || contentState.value.devices.isNotEmpty(),
-                    isConfigured = true,
-                    error = null
-                )
-            }
-
-            val devicesResult = repository.getNetworkDevices()
-            if (devicesResult.isFailure) {
-                _uiState.update { current ->
-                    current.copy(
-                        devices = buildVisibleDevices(
-                            devices = contentState.value.devices,
-                            query = current.query,
-                            showOnlineOnly = current.showOnlineOnly
-                        ),
-                        isLoading = false,
-                        isRefreshing = false,
-                        error = devicesResult.exceptionOrNull()?.message ?: "加载设备失败"
-                    )
-                }
-                return@launch
-            }
-
-            val previousByKey = contentState.value.devices.associateBy { it.key }
-            val uiModels = devicesResult.getOrDefault(emptyList()).map { device ->
-                device.toUiModel(previousByKey[device.key])
-            }
-            val updatedAt = System.currentTimeMillis()
-
-            contentState.value = TerminalContentState(
-                devices = uiModels,
-                lastUpdatedAt = updatedAt
+        _uiState.update {
+            it.copy(
+                isLoading = contentState.value.devices.isEmpty() && !forceRefresh,
+                isRefreshing = forceRefresh || contentState.value.devices.isNotEmpty(),
+                isConfigured = true,
+                error = null
             )
-            syncExpandedTrafficPolling(uiModels)
+        }
+
+        val devicesResult = repository.getNetworkDevices()
+        if (devicesResult.isFailure) {
             _uiState.update { current ->
                 current.copy(
                     devices = buildVisibleDevices(
-                        devices = uiModels,
+                        devices = contentState.value.devices,
                         query = current.query,
                         showOnlineOnly = current.showOnlineOnly
                     ),
                     isLoading = false,
                     isRefreshing = false,
-                    isConfigured = true,
-                    error = null,
-                    lastUpdatedAt = updatedAt
+                    error = devicesResult.exceptionOrNull()?.message ?: "加载设备失败"
                 )
             }
+            return
+        }
+
+        val previousByKey = contentState.value.devices.associateBy { it.key }
+        val uiModels = devicesResult.getOrDefault(emptyList()).map { device ->
+            device.toUiModel(previousByKey[device.key])
+        }
+        val updatedAt = System.currentTimeMillis()
+
+        contentState.value = TerminalContentState(
+            devices = uiModels,
+            lastUpdatedAt = updatedAt
+        )
+        syncExpandedTrafficPolling(uiModels)
+        _uiState.update { current ->
+            current.copy(
+                devices = buildVisibleDevices(
+                    devices = uiModels,
+                    query = current.query,
+                    showOnlineOnly = current.showOnlineOnly
+                ),
+                isLoading = false,
+                isRefreshing = false,
+                isConfigured = true,
+                error = null,
+                lastUpdatedAt = updatedAt
+            )
         }
     }
 
@@ -474,6 +476,7 @@ class TerminalViewModel @Inject constructor(
 
     override fun onCleared() {
         pollingJob?.cancel()
+        loadJob?.cancel()
         trafficPollingJobs.values.forEach { it.cancel() }
         trafficPollingJobs.clear()
         super.onCleared()

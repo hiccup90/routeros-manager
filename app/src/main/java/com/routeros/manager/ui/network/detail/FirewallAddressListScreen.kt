@@ -55,6 +55,7 @@ fun FirewallAddressListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    var pendingDeleteId by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(uiState.error) { uiState.error?.let { snackbarHostState.showSnackbar(it) } }
 
     Scaffold(
@@ -81,7 +82,9 @@ fun FirewallAddressListScreen(
                 }
                 else -> LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(uiState.items, key = { it.id }) { item ->
-                        var showDelete by remember { mutableStateOf(false) }
+                        val meta = remember(item.id, item.timeout, item.creationTime, item.dynamic) {
+                            listOfNotNull(item.timeout.ifBlank { null }, item.creationTime.ifBlank { null }, if (item.dynamic) "dynamic" else null).joinToString(" | ")
+                        }
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)),
@@ -91,28 +94,28 @@ fun FirewallAddressListScreen(
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(item.list.ifBlank { "(未命名列表)" }, style = MaterialTheme.typography.bodyLarge)
                                     Text(item.address, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    val meta = listOfNotNull(item.timeout.ifBlank { null }, item.creationTime.ifBlank { null }, if (item.dynamic) "dynamic" else null).joinToString(" | ")
                                     if (meta.isNotEmpty()) Text(meta, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     if (item.comment.isNotEmpty()) Text(item.comment, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Switch(checked = !item.disabled, onCheckedChange = { viewModel.toggleEnable(item.id, item.disabled) }, modifier = Modifier.scale(0.8f))
-                                    IconButton(onClick = { showDelete = true }) { Icon(Icons.Default.Delete, "删除", tint = MaterialTheme.colorScheme.error) }
+                                    IconButton(onClick = { pendingDeleteId = item.id }) { Icon(Icons.Default.Delete, "删除", tint = MaterialTheme.colorScheme.error) }
                                 }
                             }
-                        }
-                        if (showDelete) {
-                            AlertDialog(
-                                onDismissRequest = { showDelete = false },
-                                title = { Text("确认删除") },
-                                text = { Text("确定要删除此 Address List 项吗？") },
-                                confirmButton = { TextButton(onClick = { showDelete = false; viewModel.delete(item.id) }) { Text("删除", color = MaterialTheme.colorScheme.error) } },
-                                dismissButton = { TextButton(onClick = { showDelete = false }) { Text("取消") } }
-                            )
                         }
                     }
                 }
             }
+        }
+
+        pendingDeleteId?.let { deletingId ->
+            AlertDialog(
+                onDismissRequest = { pendingDeleteId = null },
+                title = { Text("确认删除") },
+                text = { Text("确定要删除此 Address List 项吗？") },
+                confirmButton = { TextButton(onClick = { pendingDeleteId = null; viewModel.delete(deletingId) }) { Text("删除", color = MaterialTheme.colorScheme.error) } },
+                dismissButton = { TextButton(onClick = { pendingDeleteId = null }) { Text("取消") } }
+            )
         }
 
         if (uiState.showAddDialog) {
@@ -138,10 +141,10 @@ fun FirewallAddressListScreen(
 
         if (uiState.showEditDialog && uiState.editingItem != null) {
             val item = uiState.editingItem!!
-            var list by remember { mutableStateOf(item.list) }
-            var address by remember { mutableStateOf(item.address) }
-            var timeout by remember { mutableStateOf(item.timeout) }
-            var comment by remember { mutableStateOf(item.comment) }
+            var list by remember(item.id) { mutableStateOf(item.list) }
+            var address by remember(item.id) { mutableStateOf(item.address) }
+            var timeout by remember(item.id) { mutableStateOf(item.timeout) }
+            var comment by remember(item.id) { mutableStateOf(item.comment) }
             AlertDialog(
                 onDismissRequest = { viewModel.hideEditDialog() },
                 title = { Text("编辑 IPv4 Address List") },

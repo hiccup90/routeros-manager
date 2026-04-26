@@ -50,6 +50,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -224,6 +225,10 @@ private fun SummaryCard(
     isRefreshing: Boolean,
     lastUpdatedAt: Long?
 ) {
+    val formattedUpdatedAt = remember(lastUpdatedAt) {
+        lastUpdatedAt?.let(::formatTimestamp)
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f))
@@ -254,9 +259,9 @@ private fun SummaryCard(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            lastUpdatedAt?.let {
+            formattedUpdatedAt?.let {
                 Text(
-                    text = "更新于 ${formatTimestamp(it)}",
+                    text = "更新于 $it",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
