@@ -20,13 +20,10 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.routeros.manager.ui.components.GlassCard
 import com.routeros.manager.ui.components.GlassScaffold
+import com.routeros.manager.ui.components.GlassTitleBar
 import com.routeros.manager.ui.components.animateGlassSize
 import com.routeros.manager.ui.navigation.NetworkRoutes
 import com.routeros.manager.ui.theme.PrimaryTeal
@@ -93,17 +91,7 @@ fun NetworkScreen(
 
     GlassScaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "网络",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.10f)
-                )
-            )
+            GlassTitleBar(title = "网络")
         }
     ) { paddingValues ->
         Crossfade(targetState = quickActions, label = "network-actions") { actions ->
@@ -116,13 +104,6 @@ fun NetworkScreen(
             ) {
                 item {
                     Spacer(modifier = Modifier.height(4.dp))
-                }
-
-                item {
-                    SectionHint(
-                        title = "网络配置控制中心",
-                        subtitle = "首页只放高频网络操作：设备网络配置、IPv4 防火墙、IPv6 防火墙和 DNS 设置。"
-                    )
                 }
 
                 items(
@@ -141,32 +122,6 @@ fun NetworkScreen(
 }
 
 @Composable
-private fun SectionHint(
-    title: String,
-    subtitle: String
-) {
-    GlassCard(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier
-                .padding(20.dp)
-                .animateGlassSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
 private fun QuickActionCard(action: NetworkQuickAction) {
     GlassCard(
         modifier = Modifier.fillMaxWidth(),
@@ -175,7 +130,7 @@ private fun QuickActionCard(action: NetworkQuickAction) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp)
+                .padding(horizontal = 18.dp, vertical = 16.dp)
                 .animateGlassSize(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
@@ -186,7 +141,7 @@ private fun QuickActionCard(action: NetworkQuickAction) {
             ) {
                 Box(
                     modifier = Modifier
-                        .size(46.dp)
+                        .size(42.dp)
                         .background(action.tint.copy(alpha = 0.16f), shape = MaterialTheme.shapes.medium),
                     contentAlignment = Alignment.Center
                 ) {
@@ -196,8 +151,8 @@ private fun QuickActionCard(action: NetworkQuickAction) {
                         tint = action.tint
                     )
                 }
-                Spacer(modifier = Modifier.width(14.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
                         text = action.title,
                         style = MaterialTheme.typography.titleMedium,
@@ -207,11 +162,6 @@ private fun QuickActionCard(action: NetworkQuickAction) {
                         text = action.headline,
                         style = MaterialTheme.typography.bodyMedium,
                         color = action.tint
-                    )
-                    Text(
-                        text = action.supporting,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

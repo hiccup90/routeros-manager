@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Router
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -39,12 +38,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -60,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.routeros.manager.ui.components.GlassCard
 import com.routeros.manager.ui.components.GlassScaffold
+import com.routeros.manager.ui.components.GlassTitleBar
 import com.routeros.manager.ui.components.animateGlassSize
 import com.routeros.manager.ui.theme.PrimaryTeal
 import com.routeros.manager.ui.theme.PrimaryTealLight
@@ -88,13 +86,9 @@ fun TerminalScreen(
 
     GlassScaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("终端") },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.10f),
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
-                ),
-                actions = {
+            GlassTitleBar(
+                title = "终端",
+                trailing = {
                     IconButton(onClick = viewModel::refresh) {
                         Icon(Icons.Default.Refresh, contentDescription = "刷新")
                     }
@@ -114,7 +108,6 @@ fun TerminalScreen(
                 query = uiState.query,
                 showOnlineOnly = uiState.showOnlineOnly,
                 isRefreshing = uiState.isRefreshing,
-                lastUpdatedAt = uiState.lastUpdatedAt
             )
 
             Row(
@@ -228,19 +221,14 @@ private fun SummaryCard(
     deviceCount: Int,
     query: String,
     showOnlineOnly: Boolean,
-    isRefreshing: Boolean,
-    lastUpdatedAt: Long?
+    isRefreshing: Boolean
 ) {
-    val formattedUpdatedAt = remember(lastUpdatedAt) {
-        lastUpdatedAt?.let(::formatTimestamp)
-    }
-
     GlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
-                .padding(20.dp)
+                .padding(horizontal = 18.dp, vertical = 16.dp)
                 .animateGlassSize(),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -258,19 +246,12 @@ private fun SummaryCard(
             }
             Text(
                 text = buildString {
-                    append(if (query.isBlank()) "共 $deviceCount 台设备" else "筛选后 $deviceCount 台设备")
-                    append(if (showOnlineOnly) " · 仅在线" else " · 全部")
+                    append(if (query.isBlank()) "$deviceCount 台设备" else "筛选后 $deviceCount 台")
+                    append(if (showOnlineOnly) " · 在线" else "")
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            formattedUpdatedAt?.let {
-                Text(
-                    text = "更新于 $it",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
         }
     }
 }
@@ -290,7 +271,7 @@ private fun DeviceCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onToggle)
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
@@ -339,32 +320,17 @@ private fun DeviceCard(
                         DetailLine("IPv6", device.ipv6Display)
                         DetailLine("接口", device.interfaceDisplay)
                         TrafficSection(device = device)
-                        if (device.hostname.isNotBlank() && device.hostname != device.displayName) {
-                            DetailLine("主机名", device.hostname)
-                        }
-                        if (device.inferredName.isNotBlank() && device.inferredName != device.displayName) {
-                            DetailLine("推测名称", device.inferredName)
-                        }
-                        if (device.expires.isNotBlank()) {
-                            DetailLine("租约", device.expires)
-                        }
-                        if (device.lastSeen.isNotBlank()) {
-                            DetailLine("最近出现", device.lastSeen)
-                        }
-                        if (device.comment.isNotBlank()) {
-                            DetailLine("备注", device.comment)
-                        }
                         Button(
                             onClick = {
                                 val query = listOf(device.primaryAddress, device.macAddress, device.displayName)
                                     .firstOrNull { it.isNotBlank() && it != "--" }
                                     .orEmpty()
                                 onOpenNetworkConfig(query)
-                            }
+                            },
+                            shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("网络配置")
+                            Text("打开网络配置")
                         }
-                        SourceChips(device.sources)
                     }
                 }
             }
