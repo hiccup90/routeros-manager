@@ -1,7 +1,6 @@
 package com.routeros.manager.ui.network.detail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,8 +24,6 @@ import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.SettingsEthernet
 import androidx.compose.material.icons.filled.SwapHoriz
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -41,6 +38,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.routeros.manager.ui.components.GlassCard
+import com.routeros.manager.ui.components.GlassScaffold
+import com.routeros.manager.ui.components.animateGlassSize
 import com.routeros.manager.ui.theme.PrimaryTeal
 import com.routeros.manager.ui.theme.SecondaryPurple
 import com.routeros.manager.ui.theme.StatusInfo
@@ -208,7 +208,7 @@ private fun HubScreen(
     onNavigateBack: () -> Unit,
     entries: List<HubEntry>
 ) {
-    Scaffold(
+    GlassScaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(title) },
@@ -218,7 +218,7 @@ private fun HubScreen(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.10f)
                 )
             )
         }
@@ -227,20 +227,16 @@ private fun HubScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
-                    )
-                ) {
+                GlassCard(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = description,
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier
+                            .padding(20.dp)
+                            .animateGlassSize(),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -263,13 +259,9 @@ private fun HubScreen(
 
 @Composable
 private fun HubEntryCard(item: HubEntry) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = item.onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.82f)
-        )
+    GlassCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = item.onClick
     ) {
         Row(
             modifier = Modifier

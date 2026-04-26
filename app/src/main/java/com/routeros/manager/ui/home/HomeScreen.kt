@@ -1,5 +1,6 @@
 package com.routeros.manager.ui.home
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,6 +49,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.routeros.manager.ui.components.GlassCard
+import com.routeros.manager.ui.components.GlassScaffold
+import com.routeros.manager.ui.components.animateGlassSize
 import com.routeros.manager.ui.theme.PrimaryTeal
 import com.routeros.manager.ui.theme.PrimaryTealLight
 import com.routeros.manager.ui.theme.SecondaryPurple
@@ -87,12 +91,12 @@ fun HomeScreen(
         }
     }
 
-    Scaffold(
+    GlassScaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(uiState.routerName, maxLines = 1) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.10f)
                 )
             )
         },
@@ -102,82 +106,84 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.background)
+                .padding(horizontal = 16.dp)
         ) {
-            if (!uiState.isConnected && !uiState.isLoading) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        Icons.Outlined.WifiOff, contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "未连接到路由器",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "请在设置中配置连接信息",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    item {
-                        SystemStatusCard(
-                            cpuLoad = uiState.cpuLoad,
-                            memoryPercent = uiState.memoryPercent,
-                            memoryUsed = uiState.memoryUsed,
-                            memoryTotal = uiState.memoryTotal,
-                            uptime = uiState.uptime,
-                            version = uiState.version,
-                            boardName = uiState.boardName
+            Crossfade(targetState = !uiState.isConnected && !uiState.isLoading, label = "home-content") { showEmpty ->
+                if (showEmpty) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            Icons.Outlined.WifiOff, contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "未连接到路由器",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "请在设置中配置连接信息",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
                     }
-
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                "接口流量",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 20.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        item {
+                            SystemStatusCard(
+                                cpuLoad = uiState.cpuLoad,
+                                memoryPercent = uiState.memoryPercent,
+                                memoryUsed = uiState.memoryUsed,
+                                memoryTotal = uiState.memoryTotal,
+                                uptime = uiState.uptime,
+                                version = uiState.version,
+                                boardName = uiState.boardName
                             )
-                            if (uiState.isLoading && uiState.interfaces.isEmpty()) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    strokeWidth = 2.dp
+                        }
+
+                        item {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    "接口流量",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                if (uiState.isLoading && uiState.interfaces.isEmpty()) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        strokeWidth = 2.dp
+                                    )
+                                }
+                            }
+                        }
+
+                        if (uiState.interfaces.isEmpty() && !uiState.isLoading) {
+                            item {
+                                Text(
+                                    "暂无接口数据",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
-                    }
 
-                    if (uiState.interfaces.isEmpty() && !uiState.isLoading) {
-                        item {
-                            Text(
-                                "暂无接口数据",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        items(uiState.interfaces, key = { it.id.ifBlank { it.name } }) { iface ->
+                            InterfaceCard(iface)
                         }
-                    }
-
-                    items(uiState.interfaces, key = { it.id.ifBlank { it.name } }) { iface ->
-                        InterfaceCard(iface)
                     }
                 }
             }
@@ -198,15 +204,14 @@ fun SystemStatusCard(
     val cpuLoadPercent = remember(cpuLoad) { cpuLoad.toIntOrNull() ?: 0 }
     val memoryUsedText = remember(memoryUsed) { formatBytes(memoryUsed) }
     val memoryTotalText = remember(memoryTotal) { formatBytes(memoryTotal) }
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-        )
+    GlassCard(
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier
+                .padding(20.dp)
+                .animateGlassSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
                 "系统状态",
@@ -278,16 +283,14 @@ fun SystemStatusCard(
 
 @Composable
 fun InterfaceCard(iface: HomeViewModel.InterfaceUiModel) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
-        )
+    GlassCard(
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .animateGlassSize(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {

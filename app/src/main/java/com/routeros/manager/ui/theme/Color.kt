@@ -3,9 +3,9 @@ package com.routeros.manager.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // Dark theme background colors
-val DarkBackground = Color(0xFF121212)
-val DarkSurface = Color(0xFF1E1E1E)
-val DarkSurfaceVariant = Color(0xFF2D2D2D)
+val DarkBackground = Color(0xFF0B1020)
+val DarkSurface = Color(0xFF131A2B)
+val DarkSurfaceVariant = Color(0xFF1A2236)
 
 // Primary colors - Teal/Cyan (RouterOS style)
 val PrimaryTeal = Color(0xFF00BCD4)

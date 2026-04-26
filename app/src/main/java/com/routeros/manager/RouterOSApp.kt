@@ -1,6 +1,7 @@
 package com.routeros.manager
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.WindowInsets
@@ -12,7 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,6 +21,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.routeros.manager.ui.components.GlassScaffold
 import com.routeros.manager.ui.navigation.RouterOSNavHost
 import com.routeros.manager.ui.navigation.Screen
 import com.routeros.manager.ui.theme.PrimaryTeal
@@ -31,10 +32,10 @@ fun RouterOSApp() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    Scaffold(
+    GlassScaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.18f),
                 modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
             ) {
                 Screen.bottomNavItems.forEach { screen ->
@@ -75,9 +76,11 @@ fun RouterOSApp() {
             }
         }
     ) { innerPadding ->
-        RouterOSNavHost(
-            navController = navController,
-            modifier = Modifier.padding(innerPadding)
-        )
+        Crossfade(targetState = currentDestination?.route, label = "app-route") {
+            RouterOSNavHost(
+                navController = navController,
+                modifier = Modifier.padding(innerPadding)
+            )
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.routeros.manager.ui.terminal
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,8 +31,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Router
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -59,6 +58,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.routeros.manager.ui.components.GlassCard
+import com.routeros.manager.ui.components.GlassScaffold
+import com.routeros.manager.ui.components.animateGlassSize
 import com.routeros.manager.ui.theme.PrimaryTeal
 import com.routeros.manager.ui.theme.PrimaryTealLight
 import com.routeros.manager.ui.theme.SecondaryPurple
@@ -84,12 +86,12 @@ fun TerminalScreen(
         mutableStateMapOf<String, Boolean>()
     }
 
-    Scaffold(
+    GlassScaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("终端") },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.10f),
                     titleContentColor = MaterialTheme.colorScheme.onBackground
                 ),
                 actions = {
@@ -98,8 +100,7 @@ fun TerminalScreen(
                     }
                 }
             )
-        },
-        containerColor = MaterialTheme.colorScheme.background
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -155,59 +156,64 @@ fun TerminalScreen(
             )
 
             Box(modifier = Modifier.fillMaxSize()) {
-                when {
-                    uiState.isLoading -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator()
-                        }
-                    }
-
-                    !uiState.isConfigured -> {
-                        EmptyState(
-                            title = "未配置连接",
-                            message = uiState.error ?: "请先在设置中填写 RouterOS 地址、用户名和密码"
-                        )
-                    }
-
-                    uiState.devices.isEmpty() -> {
-                        EmptyState(
-                            title = if (uiState.query.isBlank()) "暂无设备" else "未找到匹配设备",
-                            message = uiState.error ?: if (uiState.query.isBlank()) {
-                                "当前列表基于 DHCP、ARP、IPv6 邻居和接口流量数据"
-                            } else {
-                                "请尝试更换搜索关键词"
+                Crossfade(
+                    targetState = Triple(uiState.isLoading, uiState.isConfigured, uiState.devices.isEmpty()),
+                    label = "terminal-state"
+                ) { _ ->
+                    when {
+                        uiState.isLoading -> {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
                             }
-                        )
-                    }
+                        }
 
-                    else -> {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 24.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            item {
-                                uiState.error?.let {
-                                    Text(
-                                        text = it,
-                                        color = MaterialTheme.colorScheme.error,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        modifier = Modifier.padding(bottom = 4.dp)
+                        !uiState.isConfigured -> {
+                            EmptyState(
+                                title = "未配置连接",
+                                message = uiState.error ?: "请先在设置中填写 RouterOS 地址、用户名和密码"
+                            )
+                        }
+
+                        uiState.devices.isEmpty() -> {
+                            EmptyState(
+                                title = if (uiState.query.isBlank()) "暂无设备" else "未找到匹配设备",
+                                message = uiState.error ?: if (uiState.query.isBlank()) {
+                                    "当前列表基于 DHCP、ARP、IPv6 邻居和接口流量数据"
+                                } else {
+                                    "请尝试更换搜索关键词"
+                                }
+                            )
+                        }
+
+                        else -> {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(bottom = 24.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                item {
+                                    uiState.error?.let {
+                                        Text(
+                                            text = it,
+                                            color = MaterialTheme.colorScheme.error,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            modifier = Modifier.padding(bottom = 4.dp)
+                                        )
+                                    }
+                                }
+                                items(uiState.devices, key = { it.key }) { device ->
+                                    val expanded = expandedMap[device.key] ?: false
+                                    DeviceCard(
+                                        device = device,
+                                        expanded = expanded,
+                                        onToggle = {
+                                            val nextExpanded = !expanded
+                                            expandedMap[device.key] = nextExpanded
+                                            viewModel.setDeviceExpanded(device.key, nextExpanded)
+                                        },
+                                        onOpenNetworkConfig = onOpenNetworkConfig
                                     )
                                 }
-                            }
-                            items(uiState.devices, key = { it.key }) { device ->
-                                val expanded = expandedMap[device.key] ?: false
-                                DeviceCard(
-                                    device = device,
-                                    expanded = expanded,
-                                    onToggle = {
-                                        val nextExpanded = !expanded
-                                        expandedMap[device.key] = nextExpanded
-                                        viewModel.setDeviceExpanded(device.key, nextExpanded)
-                                    },
-                                    onOpenNetworkConfig = onOpenNetworkConfig
-                                )
                             }
                         }
                     }
@@ -229,13 +235,12 @@ private fun SummaryCard(
         lastUpdatedAt?.let(::formatTimestamp)
     }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f))
-    ) {
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier
+                .padding(20.dp)
+                .animateGlassSize(),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -277,10 +282,8 @@ private fun DeviceCard(
     onToggle: () -> Unit,
     onOpenNetworkConfig: (String) -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)),
-        shape = RoundedCornerShape(18.dp)
+    GlassCard(
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column {
             Row(

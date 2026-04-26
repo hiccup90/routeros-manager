@@ -3,12 +3,14 @@ package com.routeros.manager.ui.theme
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
@@ -42,6 +44,14 @@ private val DarkColorScheme = darkColorScheme(
     surfaceTint = PrimaryTeal
 )
 
+private val AppShapes = Shapes(
+    extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+    small = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+    medium = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+    large = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+    extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(32.dp)
+)
+
 @Composable
 fun RouterOSManagerTheme(
     darkTheme: Boolean = true,
@@ -65,6 +75,7 @@ fun RouterOSManagerTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = AppShapes,
         content = content
     )
 }

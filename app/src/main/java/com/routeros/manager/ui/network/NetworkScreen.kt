@@ -1,7 +1,7 @@
 package com.routeros.manager.ui.network
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,8 +20,6 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -36,6 +34,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.routeros.manager.ui.components.GlassCard
+import com.routeros.manager.ui.components.GlassScaffold
+import com.routeros.manager.ui.components.animateGlassSize
 import com.routeros.manager.ui.navigation.NetworkRoutes
 import com.routeros.manager.ui.theme.PrimaryTeal
 import com.routeros.manager.ui.theme.SecondaryPurple
@@ -90,7 +91,7 @@ fun NetworkScreen(
         )
     )
 
-    Scaffold(
+    GlassScaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -100,39 +101,40 @@ fun NetworkScreen(
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.10f)
                 )
             )
-        },
-        containerColor = MaterialTheme.colorScheme.background
+        }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            item {
-                Spacer(modifier = Modifier.height(4.dp))
-            }
+        Crossfade(targetState = quickActions, label = "network-actions") { actions ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                item {
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
 
-            item {
-                SectionHint(
-                    title = "网络配置控制中心",
-                    subtitle = "首页只放高频网络操作：设备网络配置、IPv4 防火墙、IPv6 防火墙和 DNS 设置。"
-                )
-            }
+                item {
+                    SectionHint(
+                        title = "网络配置控制中心",
+                        subtitle = "首页只放高频网络操作：设备网络配置、IPv4 防火墙、IPv6 防火墙和 DNS 设置。"
+                    )
+                }
 
-            items(
-                items = quickActions,
-                key = { action -> action.title }
-            ) { action ->
-                QuickActionCard(action = action)
-            }
+                items(
+                    items = actions,
+                    key = { action -> action.title }
+                ) { action ->
+                    QuickActionCard(action = action)
+                }
 
-            item {
-                Spacer(modifier = Modifier.height(12.dp))
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
             }
         }
     }
@@ -143,15 +145,12 @@ private fun SectionHint(
     title: String,
     subtitle: String
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.58f)
-        )
-    ) {
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            modifier = Modifier
+                .padding(20.dp)
+                .animateGlassSize(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
                 text = title,
@@ -169,18 +168,15 @@ private fun SectionHint(
 
 @Composable
 private fun QuickActionCard(action: NetworkQuickAction) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = action.onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.82f)
-        )
+    GlassCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = action.onClick
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(20.dp)
+                .animateGlassSize(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
