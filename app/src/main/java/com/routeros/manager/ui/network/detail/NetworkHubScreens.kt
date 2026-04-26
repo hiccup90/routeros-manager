@@ -172,7 +172,7 @@ fun AdvancedNetworkScreen(
 ) {
     HubScreen(
         title = "更多网络设置",
-        description = "收纳 DNS 静态记录，以及路由、Bridge、VLAN 等后续扩展入口；仅 DNS 当前具备真实编辑能力。",
+        description = "收纳低频但已可用的入口；当前提供 DNS 静态记录，其他 RouterOS 网络模块后续再补。",
         onNavigateBack = onNavigateBack,
         entries = listOf(
             HubEntry(
@@ -181,20 +181,6 @@ fun AdvancedNetworkScreen(
                 icon = Icons.Default.Dns,
                 tint = PrimaryTeal,
                 onClick = onOpenDns
-            ),
-            HubEntry(
-                title = "路由",
-                subtitle = "预留给静态路由与多出口能力",
-                icon = Icons.Default.Security,
-                tint = SecondaryPurple,
-                onClick = { }
-            ),
-            HubEntry(
-                title = "Bridge / VLAN",
-                subtitle = "预留给二层网络与隔离能力",
-                icon = Icons.Default.Hub,
-                tint = StatusInfo,
-                onClick = { }
             )
         )
     )

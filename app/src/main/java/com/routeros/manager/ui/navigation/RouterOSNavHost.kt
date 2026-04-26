@@ -11,6 +11,7 @@ import androidx.navigation.navArgument
 import com.routeros.manager.ui.home.HomeScreen
 import com.routeros.manager.ui.network.NetworkScreen
 import com.routeros.manager.ui.network.detail.AddressAllocationScreen
+import com.routeros.manager.ui.network.detail.AdvancedNetworkScreen
 import com.routeros.manager.ui.network.detail.DhcpClientListScreen
 import com.routeros.manager.ui.network.detail.DhcpLeaseListScreen
 import com.routeros.manager.ui.network.detail.DhcpNetworkListScreen
@@ -146,6 +147,13 @@ fun RouterOSNavHost(
             IpDnsSettingsScreen(
                 onNavigateBack = popBack,
                 onOpenDnsRecords = { navController.navigate(NetworkRoutes.DNS_RECORDS) }
+            )
+        }
+
+        composable(NetworkRoutes.ADVANCED_NETWORK) {
+            AdvancedNetworkScreen(
+                onNavigateBack = popBack,
+                onOpenDns = { navController.navigate(NetworkRoutes.DNS_RECORDS) }
             )
         }
 

@@ -65,6 +65,7 @@ object NetworkRoutes {
     const val DHCP_LEASES_BASE = "network/dhcp_leases"
     const val DNS_SETTINGS = "network/dns_settings"
     const val DNS_RECORDS = "network/dns_records"
+    const val ADVANCED_NETWORK = "network/advanced"
     const val NAT_RULES = "network/nat_rules"
     const val FILTER_RULES = "network/filter_rules"
     const val IPV6_FILTER_RULES = "network/ipv6_filter_rules"

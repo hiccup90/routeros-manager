@@ -15,11 +15,13 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -47,26 +49,26 @@ val GlassCardShape = RoundedCornerShape(24.dp)
 @Composable
 fun glassContainerColor(): Color {
     return if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-        Color.Black.copy(alpha = 0.20f)
+        Color(0xCC121826)
     } else {
-        Color.White.copy(alpha = 0.15f)
+        Color.White.copy(alpha = 0.18f)
     }
 }
 
 @Composable
 fun glassBorderBrush(): Brush {
     val light = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-        Color.White.copy(alpha = 0.18f)
+        Color.White.copy(alpha = 0.22f)
     } else {
-        Color.White.copy(alpha = 0.42f)
+        Color.White.copy(alpha = 0.46f)
     }
     val soft = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-        Color.White.copy(alpha = 0.06f)
+        Color(0xFF8FA8FF).copy(alpha = 0.10f)
     } else {
-        Color.White.copy(alpha = 0.16f)
+        Color.White.copy(alpha = 0.18f)
     }
     return Brush.linearGradient(
-        colors = listOf(light, soft, light.copy(alpha = light.alpha * 0.7f)),
+        colors = listOf(light, soft, light.copy(alpha = light.alpha * 0.72f)),
         start = Offset.Zero,
         end = Offset.Infinite
     )
@@ -88,13 +90,28 @@ fun GlassCard(
         Modifier
     }
 
+    val highlightBrush = Brush.verticalGradient(
+        colors = listOf(
+            Color.White.copy(alpha = 0.10f),
+            Color.White.copy(alpha = 0.03f),
+            Color.Transparent
+        )
+    )
+    val depthBrush = Brush.verticalGradient(
+        colors = listOf(
+            Color.Transparent,
+            Color.Black.copy(alpha = 0.05f),
+            Color.Black.copy(alpha = 0.12f)
+        )
+    )
+
     Card(
         modifier = modifier
             .shadow(
-                elevation = 18.dp,
+                elevation = 24.dp,
                 shape = GlassCardShape,
-                ambientColor = Color.Black.copy(alpha = 0.18f),
-                spotColor = Color.Black.copy(alpha = 0.12f)
+                ambientColor = Color.Black.copy(alpha = 0.26f),
+                spotColor = Color.Black.copy(alpha = 0.18f)
             )
             .clip(GlassCardShape)
             .background(glassContainerColor(), GlassCardShape)
@@ -105,6 +122,17 @@ fun GlassCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Box(modifier = Modifier.animateGlassSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(88.dp)
+                    .background(highlightBrush)
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(depthBrush)
+            )
             content()
         }
     }
@@ -120,17 +148,39 @@ fun GlassTitleBar(
         modifier = modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(horizontal = 20.dp, vertical = 6.dp)
-            .heightIn(min = 40.dp),
+            .padding(horizontal = 16.dp, vertical = 10.dp)
+            .heightIn(min = 56.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color.Black.copy(alpha = 0.14f))
+            .border(
+                width = 1.dp,
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.16f),
+                        Color.White.copy(alpha = 0.05f),
+                        Color(0xFF8FA8FF).copy(alpha = 0.10f)
+                    )
+                ),
+                shape = RoundedCornerShape(20.dp)
+            )
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            maxLines = 1
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = "ROUTEROS MANAGER",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.62f),
+                maxLines = 1
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1
+            )
+        }
         Row(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
