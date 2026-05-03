@@ -4,25 +4,78 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <group android:scaleX="0.5"
-        android:scaleY="0.5"
-        android:translateX="27"
-        android:translateY="27">
-        <!-- Router Icon -->
-        <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M54,20 L54,88 M20,54 L88,54"
-            android:strokeWidth="8"
-            android:strokeColor="#FFFFFF"/>
-        <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M30,30 L78,30 L78,78 L30,78 Z"
-            android:strokeWidth="6"
-            android:strokeColor="#FFFFFF"/>
-        <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M40,45 L68,45 M40,54 L68,54 M40,63 L68,63"
-            android:strokeWidth="4"
-            android:strokeColor="#FFFFFF"/>
-    </group>
+
+    <!-- WiFi Signal Arc 1 (innermost) -->
+    <path
+        android:pathData="M58.2,39.8 A6,6,0,0,0,49.8,39.8"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round"/>
+
+    <!-- WiFi Signal Arc 2 (middle) -->
+    <path
+        android:pathData="M62.5,35.5 A12,12,0,0,0,45.5,35.5"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round"/>
+
+    <!-- WiFi Signal Arc 3 (outermost) -->
+    <path
+        android:pathData="M66.7,31.3 A18,18,0,0,0,41.3,31.3"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round"/>
+
+    <!-- Left Antenna -->
+    <path
+        android:pathData="M43,58 L43,46"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"/>
+
+    <!-- Right Antenna -->
+    <path
+        android:pathData="M65,58 L65,46"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"/>
+
+    <!-- Left Antenna Tip -->
+    <path
+        android:pathData="M41,44 A2,2,0,1,1,45,44 A2,2,0,1,1,41,44"
+        android:fillColor="#FFFFFF"/>
+
+    <!-- Right Antenna Tip -->
+    <path
+        android:pathData="M63,44 A2,2,0,1,1,67,44 A2,2,0,1,1,63,44"
+        android:fillColor="#FFFFFF"/>
+
+    <!-- Router Body (rounded rectangle) -->
+    <path
+        android:pathData="M28,58 L80,58 A4,4,0,0,1,84,62 L84,76 A4,4,0,0,1,80,80 L28,80 A4,4,0,0,1,24,76 L24,62 A4,4,0,0,1,28,58 Z"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:fillColor="#00000000"
+        android:strokeLineJoin="round"/>
+
+    <!-- LED Indicator (top) -->
+    <path
+        android:pathData="M33,66 m-1.5,0 a1.5,1.5,0,1,1,3,0 a1.5,1.5,0,1,1,-3,0"
+        android:fillColor="#FFFFFF"/>
+
+    <!-- LED Indicator (bottom) -->
+    <path
+        android:pathData="M33,74 m-1.5,0 a1.5,1.5,0,1,1,3,0 a1.5,1.5,0,1,1,-3,0"
+        android:fillColor="#FFFFFF"/>
+
+    <!-- Port lines (decorative router detail) -->
+    <path
+        android:pathData="M45,64 L57,64 L57,76 L45,76 Z"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"/>
+    <path
+        android:pathData="M62,64 L74,64 L74,76 L62,76 Z"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"/>
+
 </vector>

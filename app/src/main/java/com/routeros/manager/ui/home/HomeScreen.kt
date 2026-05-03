@@ -20,8 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.outlined.WifiOff
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -47,14 +45,16 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.routeros.manager.ui.components.GlassCard
 import com.routeros.manager.ui.components.GlassScaffold
 import com.routeros.manager.ui.components.GlassTitleBar
-import com.routeros.manager.ui.components.animateGlassSize
+import com.routeros.manager.ui.theme.DarkSurfaceElevated
+import com.routeros.manager.ui.theme.DarkSurfaceVariant
+import com.routeros.manager.ui.theme.OnDarkSurface
+import com.routeros.manager.ui.theme.OnDarkSurfaceVariant
 import com.routeros.manager.ui.theme.PrimaryTeal
 import com.routeros.manager.ui.theme.PrimaryTealLight
-import com.routeros.manager.ui.theme.SecondaryPurple
 import com.routeros.manager.ui.theme.StatusError
 import com.routeros.manager.ui.theme.StatusSuccess
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
@@ -100,12 +100,12 @@ fun HomeScreen(
                         Icons.Outlined.WifiOff,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = OnDarkSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("未连接到路由器", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("未连接到路由器", style = MaterialTheme.typography.titleMedium, color = OnDarkSurfaceVariant)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("请在设置中配置连接信息", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                    Text("请在设置中配置连接信息", style = MaterialTheme.typography.bodyMedium, color = OnDarkSurfaceVariant.copy(alpha = 0.7f))
                 }
             } else {
                 LazyColumn(
@@ -137,7 +137,7 @@ fun HomeScreen(
 
                     if (uiState.interfaces.isEmpty() && !uiState.isLoading) {
                         item {
-                            Text("暂无接口数据", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("暂无接口数据", style = MaterialTheme.typography.bodyMedium, color = OnDarkSurfaceVariant)
                         }
                     }
 
@@ -171,10 +171,10 @@ private fun HomeSummaryCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 18.dp, vertical = 18.dp)
-                .animateGlassSize(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(horizontal = 18.dp, vertical = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            // Header row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -184,29 +184,30 @@ private fun HomeSummaryCard(
                     Text(
                         text = if (routerName.isBlank()) "RouterOS" else routerName,
                         style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = OnDarkSurface
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         HomeOverviewPill(
                             text = if (isConnected) "在线" else "离线",
                             tint = if (isConnected) StatusSuccess else StatusError
                         )
-                        HomeOverviewPill(text = "$interfaceCount 个接口", tint = SecondaryPurple)
+                        HomeOverviewPill(text = "$interfaceCount 个接口", tint = PrimaryTeal)
                     }
                 }
                 Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.24f)
+                    shape = RoundedCornerShape(10.dp),
+                    color = DarkSurfaceVariant
                 ) {
                     Text(
                         text = version,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = OnDarkSurfaceVariant
                     )
                 }
             }
 
+            // CPU / Memory metrics
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -223,11 +224,12 @@ private fun HomeSummaryCard(
                     label = "内存",
                     value = "$memoryPercent%",
                     progress = memoryPercent / 100f,
-                    accent = if (memoryPercent > 80) StatusError else SecondaryPurple,
+                    accent = if (memoryPercent > 80) StatusError else PrimaryTeal,
                     supporting = "$memoryUsedText / $memoryTotalText"
                 )
             }
 
+            // Info tiles
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -244,8 +246,9 @@ private fun HomeSummaryCard(
                 )
             }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
-            Text(text = "运行时间：$uptime", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            // Uptime
+            HorizontalDivider(color = DarkSurfaceVariant, thickness = 0.5.dp)
+            Text(text = "运行时间：$uptime", style = MaterialTheme.typography.bodyMedium, color = OnDarkSurfaceVariant)
         }
     }
 }
@@ -255,9 +258,20 @@ private fun HomeSectionHeader(
     title: String,
     subtitle: String
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(text = title, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
-        Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Column(
+        modifier = Modifier.padding(top = 4.dp, bottom = 2.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = OnDarkSurface
+        )
+        Text(
+            text = subtitle,
+            style = MaterialTheme.typography.bodySmall,
+            color = OnDarkSurfaceVariant
+        )
     }
 }
 
@@ -269,15 +283,15 @@ private fun HomeInfoTile(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f)
+        shape = RoundedCornerShape(12.dp),
+        color = DarkSurfaceElevated
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Text(text = label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(text = value.ifBlank { "--" }, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = label, style = MaterialTheme.typography.labelSmall, color = OnDarkSurfaceVariant)
+            Text(text = value.ifBlank { "--" }, style = MaterialTheme.typography.titleMedium, color = OnDarkSurface)
         }
     }
 }
@@ -289,8 +303,8 @@ private fun HomeOverviewPill(
 ) {
     Box(
         modifier = Modifier
-            .background(color = tint.copy(alpha = 0.14f), shape = RoundedCornerShape(999.dp))
-            .padding(horizontal = 12.dp, vertical = 7.dp)
+            .background(color = tint.copy(alpha = 0.14f), shape = RoundedCornerShape(8.dp))
+            .padding(horizontal = 10.dp, vertical = 5.dp)
     ) {
         Text(text = text, style = MaterialTheme.typography.labelMedium, color = tint)
     }
@@ -307,25 +321,26 @@ private fun StatusMetricPanel(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(18.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.24f)
+        shape = RoundedCornerShape(12.dp),
+        color = DarkSurfaceElevated
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(text = value, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = label, style = MaterialTheme.typography.labelSmall, color = OnDarkSurfaceVariant)
+            Text(text = value, style = MaterialTheme.typography.headlineSmall, color = OnDarkSurface)
             LinearProgressIndicator(
                 progress = { progress.coerceIn(0f, 1f) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(RoundedCornerShape(999.dp)),
-                color = accent
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp)),
+                color = accent,
+                trackColor = DarkSurfaceVariant
             )
             supporting?.let {
-                Text(text = it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(text = it, style = MaterialTheme.typography.bodySmall, color = OnDarkSurfaceVariant)
             }
         }
     }
@@ -337,8 +352,7 @@ fun InterfaceCard(iface: HomeViewModel.InterfaceUiModel) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp)
-                .animateGlassSize(),
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
@@ -352,13 +366,13 @@ fun InterfaceCard(iface: HomeViewModel.InterfaceUiModel) {
                             modifier = Modifier
                                 .size(8.dp)
                                 .clip(CircleShape)
-                                .background(if (iface.disabled) MaterialTheme.colorScheme.error else StatusSuccess)
+                                .background(if (iface.disabled) StatusError else StatusSuccess)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = iface.name,
                             style = MaterialTheme.typography.titleMedium,
-                            color = if (iface.disabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+                            color = if (iface.disabled) OnDarkSurfaceVariant else OnDarkSurface
                         )
                     }
                     Text(
@@ -370,12 +384,14 @@ fun InterfaceCard(iface: HomeViewModel.InterfaceUiModel) {
                 Column(horizontalAlignment = Alignment.End) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.ArrowDownward, null, modifier = Modifier.size(14.dp), tint = PrimaryTealLight)
+                        Spacer(modifier = Modifier.width(4.dp))
                         Text(iface.rxRate, style = MaterialTheme.typography.bodySmall, color = PrimaryTealLight)
                     }
                     Spacer(modifier = Modifier.height(2.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.ArrowUpward, null, modifier = Modifier.size(14.dp), tint = SecondaryPurple)
-                        Text(iface.txRate, style = MaterialTheme.typography.bodySmall, color = SecondaryPurple)
+                        Icon(Icons.Default.ArrowUpward, null, modifier = Modifier.size(14.dp), tint = PrimaryTeal)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(iface.txRate, style = MaterialTheme.typography.bodySmall, color = PrimaryTeal)
                     }
                 }
             }

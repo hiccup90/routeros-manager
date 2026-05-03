@@ -2,11 +2,8 @@ package com.routeros.manager.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -18,7 +15,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -49,50 +45,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.routeros.manager.ui.theme.AccentMagenta
+import com.routeros.manager.ui.theme.DarkSurface
+import com.routeros.manager.ui.theme.DarkSurfaceElevated
 import com.routeros.manager.ui.theme.PrimaryTeal
-import com.routeros.manager.ui.theme.SurfaceGlassBorder
-import com.routeros.manager.ui.theme.SurfaceGlassMedium
-import com.routeros.manager.ui.theme.SurfaceGlassOverlay
+import com.routeros.manager.ui.theme.OnDarkSurfaceVariant
 
-val GlassCardShape = RoundedCornerShape(24.dp)
-
-@Composable
-fun glassContainerColor(): Color {
-    return if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-        Color(0xD9111A2C)
-    } else {
-        Color.White.copy(alpha = 0.18f)
-    }
-}
-
-@Composable
-fun glassBorderBrush(): Brush {
-    val light = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-        SurfaceGlassBorder
-    } else {
-        Color.White.copy(alpha = 0.46f)
-    }
-    val soft = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-        PrimaryTeal.copy(alpha = 0.14f)
-    } else {
-        Color.White.copy(alpha = 0.18f)
-    }
-    return Brush.linearGradient(
-        colors = listOf(light, soft, light.copy(alpha = light.alpha * 0.72f)),
-        start = Offset.Zero,
-        end = Offset.Infinite
-    )
-}
+val GlassCardShape = RoundedCornerShape(16.dp)
 
 @Composable
 fun GlassCard(
@@ -110,59 +74,23 @@ fun GlassCard(
         Modifier
     }
 
-    val highlightBrush = Brush.verticalGradient(
-        colors = listOf(
-            SurfaceGlassMedium.copy(alpha = 0.28f),
-            Color.White.copy(alpha = 0.008f),
-            Color.Transparent
-        )
-    )
-    val depthBrush = Brush.verticalGradient(
-        colors = listOf(
-            SurfaceGlassOverlay,
-            Color.Black.copy(alpha = 0.06f),
-            Color.Black.copy(alpha = 0.16f)
-        )
-    )
-    val accentGlow = Brush.linearGradient(
-        colors = listOf(
-            PrimaryTeal.copy(alpha = 0.08f),
-            AccentMagenta.copy(alpha = 0.04f),
-            Color.Transparent
-        )
-    )
-
     Card(
         modifier = modifier
             .shadow(
-                elevation = 18.dp,
+                elevation = 2.dp,
                 shape = GlassCardShape,
-                ambientColor = Color.Black.copy(alpha = 0.22f),
-                spotColor = PrimaryTeal.copy(alpha = 0.10f)
+                ambientColor = Color.Black.copy(alpha = 0.3f),
+                spotColor = Color.Black.copy(alpha = 0.3f)
             )
             .clip(GlassCardShape)
-            .background(glassContainerColor(), GlassCardShape)
-            .border(width = 1.dp, brush = glassBorderBrush(), shape = GlassCardShape)
             .then(clickableModifier),
         shape = GlassCardShape,
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        colors = CardDefaults.cardColors(
+            containerColor = DarkSurface
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Box(modifier = Modifier.background(depthBrush)) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(24.dp)
-                    .background(highlightBrush)
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(14.dp)
-                    .background(accentGlow)
-            )
-            content()
-        }
+        content()
     }
 }
 
@@ -171,20 +99,20 @@ fun glassTextFieldColors(): TextFieldColors {
     return OutlinedTextFieldDefaults.colors(
         focusedTextColor = MaterialTheme.colorScheme.onSurface,
         unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-        focusedBorderColor = Color(0xFF87D6FF),
-        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.92f),
-        focusedContainerColor = Color(0x331A2740),
-        unfocusedContainerColor = Color(0x26131C31),
-        disabledContainerColor = Color(0x1A131C31),
-        cursorColor = MaterialTheme.colorScheme.primary,
-        focusedLabelColor = MaterialTheme.colorScheme.primary,
-        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
-        unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
-        unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.74f),
-        unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+        focusedBorderColor = PrimaryTeal,
+        unfocusedBorderColor = DarkSurfaceElevated,
+        focusedContainerColor = DarkSurface,
+        unfocusedContainerColor = DarkSurface,
+        disabledContainerColor = DarkSurface,
+        cursorColor = PrimaryTeal,
+        focusedLabelColor = PrimaryTeal,
+        unfocusedLabelColor = OnDarkSurfaceVariant,
+        focusedLeadingIconColor = PrimaryTeal,
+        unfocusedLeadingIconColor = OnDarkSurfaceVariant,
+        focusedTrailingIconColor = PrimaryTeal,
+        unfocusedTrailingIconColor = OnDarkSurfaceVariant,
+        focusedPlaceholderColor = OnDarkSurfaceVariant.copy(alpha = 0.6f),
+        unfocusedPlaceholderColor = OnDarkSurfaceVariant.copy(alpha = 0.4f)
     )
 }
 
@@ -202,7 +130,7 @@ fun GlassTextField(
     enabled: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
-    shape: Shape = RoundedCornerShape(18.dp),
+    shape: Shape = RoundedCornerShape(12.dp),
     colors: TextFieldColors = glassTextFieldColors()
 ) {
     OutlinedTextField(
@@ -227,17 +155,17 @@ fun GlassTextField(
 fun glassButtonColors(primary: Boolean): ButtonColors {
     return if (primary) {
         ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF66D9FF),
-            contentColor = Color(0xFF04111E),
-            disabledContainerColor = Color(0xFF66D9FF).copy(alpha = 0.38f),
-            disabledContentColor = Color(0xFF04111E).copy(alpha = 0.48f)
+            containerColor = PrimaryTeal,
+            contentColor = Color.White,
+            disabledContainerColor = PrimaryTeal.copy(alpha = 0.4f),
+            disabledContentColor = Color.White.copy(alpha = 0.6f)
         )
     } else {
         ButtonDefaults.buttonColors(
-            containerColor = Color(0x2AFFFFFF),
+            containerColor = DarkSurfaceElevated,
             contentColor = MaterialTheme.colorScheme.onSurface,
-            disabledContainerColor = Color(0x16FFFFFF),
-            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.48f)
+            disabledContainerColor = DarkSurfaceElevated.copy(alpha = 0.4f),
+            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
         )
     }
 }
@@ -255,9 +183,9 @@ fun GlassButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.heightIn(min = 52.dp),
+        modifier = modifier.heightIn(min = 50.dp),
         enabled = enabled,
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(14.dp),
         colors = glassButtonColors(primary),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
     ) {
@@ -275,13 +203,13 @@ fun GlassButton(
 
 @Composable
 fun glassFilterChipColors() = FilterChipDefaults.filterChipColors(
-    containerColor = Color(0x20141E33),
-    labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-    iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-    selectedContainerColor = Color(0x2E6AD7FF),
-    selectedLabelColor = MaterialTheme.colorScheme.onSurface,
-    selectedLeadingIconColor = MaterialTheme.colorScheme.primary,
-    selectedTrailingIconColor = MaterialTheme.colorScheme.primary
+    containerColor = DarkSurface,
+    labelColor = OnDarkSurfaceVariant,
+    iconColor = OnDarkSurfaceVariant,
+    selectedContainerColor = PrimaryTeal.copy(alpha = 0.2f),
+    selectedLabelColor = PrimaryTeal,
+    selectedLeadingIconColor = PrimaryTeal,
+    selectedTrailingIconColor = PrimaryTeal
 )
 
 @Composable
@@ -296,12 +224,12 @@ fun GlassFilterChip(
         onClick = onClick,
         label = label,
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         border = FilterChipDefaults.filterChipBorder(
             enabled = true,
             selected = selected,
-            borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.78f),
-            selectedBorderColor = Color(0x667ED7FF)
+            borderColor = DarkSurfaceElevated,
+            selectedBorderColor = PrimaryTeal.copy(alpha = 0.5f)
         ),
         colors = glassFilterChipColors()
     )
@@ -317,15 +245,14 @@ fun GlassTitleBar(
         modifier = modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(horizontal = 18.dp, vertical = 4.dp)
-            .heightIn(min = 36.dp)
-            .padding(horizontal = 2.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .heightIn(min = 44.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground,
             maxLines = 1
         )
@@ -346,20 +273,17 @@ fun GlassScaffold(
     floatingActionButton: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
-    Box(modifier = modifier.fillMaxSize()) {
-        AnimatedGradientBackground()
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            topBar = topBar,
-            bottomBar = bottomBar,
-            snackbarHost = snackbarHost,
-            floatingActionButton = floatingActionButton,
-            containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.onBackground,
-            contentWindowInsets = ScaffoldDefaults.contentWindowInsets,
-            content = content
-        )
-    }
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        topBar = topBar,
+        bottomBar = bottomBar,
+        snackbarHost = snackbarHost,
+        floatingActionButton = floatingActionButton,
+        containerColor = Color.Black,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsets,
+        content = content
+    )
 }
 
 @Composable
@@ -370,7 +294,7 @@ fun GlassScreenContainer(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.Transparent)
+            .background(Color.Black)
             .padding(horizontal = 16.dp)
             .systemBarsPadding(),
         content = content
@@ -379,31 +303,8 @@ fun GlassScreenContainer(
 
 @Composable
 fun AnimatedGradientBackground(modifier: Modifier = Modifier) {
-    val background = Brush.linearGradient(
-        colors = listOf(
-            Color(0xFF09111F),
-            Color(0xFF151F39),
-            Color(0xFF222B58),
-            Color(0xFF3A2353),
-            Color(0xFF0B213B)
-        ),
-        start = Offset(120f, 0f),
-        end = Offset(1280f, 2200f)
-    )
-
-    val glow = Brush.radialGradient(
-        colors = listOf(
-            PrimaryTeal.copy(alpha = 0.34f),
-            Color(0x305E7CFF),
-            AccentMagenta.copy(alpha = 0.12f),
-            Color.Transparent
-        ),
-        center = Offset(320f, 360f),
-        radius = 960f
-    )
-
-    Box(modifier = modifier.fillMaxSize().background(background))
-    Box(modifier = modifier.fillMaxSize().background(glow))
+    // iOS-style: solid black, no gradients
+    Box(modifier = modifier.fillMaxSize().background(Color.Black))
 }
 
 fun Modifier.animateGlassSize(): Modifier = this
@@ -420,7 +321,7 @@ fun GlassPageTransition(
     AnimatedVisibility(
         visible = visible,
         modifier = modifier,
-        enter = fadeIn(animationSpec = tween(durationMillis = 110))
+        enter = fadeIn(animationSpec = tween(durationMillis = 200))
     ) {
         content()
     }

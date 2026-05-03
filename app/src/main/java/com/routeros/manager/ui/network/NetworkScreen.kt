@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Dns
@@ -34,8 +35,10 @@ import androidx.navigation.NavController
 import com.routeros.manager.ui.components.GlassCard
 import com.routeros.manager.ui.components.GlassScaffold
 import com.routeros.manager.ui.components.GlassTitleBar
-import com.routeros.manager.ui.components.animateGlassSize
 import com.routeros.manager.ui.navigation.NetworkRoutes
+import com.routeros.manager.ui.theme.DarkSurfaceVariant
+import com.routeros.manager.ui.theme.OnDarkSurface
+import com.routeros.manager.ui.theme.OnDarkSurfaceVariant
 import com.routeros.manager.ui.theme.PrimaryTeal
 import com.routeros.manager.ui.theme.SecondaryPurple
 import com.routeros.manager.ui.theme.StatusWarning
@@ -110,16 +113,19 @@ private fun NetworkSectionCard(section: NetworkSection) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 18.dp, vertical = 18.dp)
-                .animateGlassSize(),
+                .padding(horizontal = 18.dp, vertical = 18.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(text = section.title, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
+                Text(
+                    text = section.title,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = OnDarkSurface
+                )
                 Text(
                     text = section.subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.82f)
+                    color = OnDarkSurfaceVariant
                 )
             }
             section.actions.forEach { action ->
@@ -143,21 +149,28 @@ private fun QuickActionRow(action: NetworkQuickAction) {
                 Box(
                     modifier = Modifier
                         .size(48.dp)
-                        .background(action.tint.copy(alpha = 0.16f), shape = MaterialTheme.shapes.medium),
+                        .background(action.tint.copy(alpha = 0.16f), shape = RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(action.icon, contentDescription = null, tint = action.tint)
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = action.title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = action.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = OnDarkSurface
+                        )
                         QuickActionBadge(text = action.badge, tint = action.tint)
                     }
                     Text(
                         text = action.subtitle,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = OnDarkSurfaceVariant,
                         maxLines = 2
                     )
                 }
@@ -167,15 +180,15 @@ private fun QuickActionRow(action: NetworkQuickAction) {
                     .padding(start = 10.dp)
                     .size(30.dp)
                     .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.26f),
-                        shape = MaterialTheme.shapes.medium
+                        color = DarkSurfaceVariant,
+                        shape = RoundedCornerShape(8.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.ChevronRight,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.82f),
+                    tint = OnDarkSurfaceVariant,
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -187,14 +200,14 @@ private fun QuickActionRow(action: NetworkQuickAction) {
 private fun QuickActionBadge(text: String, tint: Color) {
     Box(
         modifier = Modifier
-            .background(color = tint.copy(alpha = 0.12f), shape = MaterialTheme.shapes.large)
+            .background(color = tint.copy(alpha = 0.14f), shape = RoundedCornerShape(8.dp))
             .padding(horizontal = 10.dp, vertical = 4.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelSmall,
-            color = tint.copy(alpha = 0.92f)
+            color = tint
         )
     }
 }

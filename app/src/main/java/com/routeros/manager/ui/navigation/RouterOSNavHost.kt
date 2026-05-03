@@ -1,6 +1,9 @@
 package com.routeros.manager.ui.navigation
 
 import android.net.Uri
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -35,6 +38,8 @@ import com.routeros.manager.ui.network.detail.NatRuleListScreen
 import com.routeros.manager.ui.settings.SettingsScreen
 import com.routeros.manager.ui.terminal.TerminalScreen
 
+private const val TAB_FADE_MS = 180
+
 @Composable
 fun RouterOSNavHost(
     navController: NavHostController,
@@ -46,7 +51,11 @@ fun RouterOSNavHost(
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
+        enterTransition = { fadeIn(animationSpec = tween(TAB_FADE_MS)) },
+        exitTransition = { fadeOut(animationSpec = tween(TAB_FADE_MS)) },
+        popEnterTransition = { fadeIn(animationSpec = tween(TAB_FADE_MS)) },
+        popExitTransition = { fadeOut(animationSpec = tween(TAB_FADE_MS)) }
     ) {
         composable(Screen.Home.route) {
             HomeScreen()

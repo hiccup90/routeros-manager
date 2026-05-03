@@ -1,7 +1,6 @@
 package com.routeros.manager.ui.theme
 
 import android.app.Activity
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
@@ -15,21 +14,21 @@ import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
     primary = PrimaryTeal,
-    onPrimary = DarkBackgroundDeep,
+    onPrimary = Color.White,
     primaryContainer = PrimaryTealDark,
-    onPrimaryContainer = OnDarkBackground,
+    onPrimaryContainer = Color.White,
     secondary = SecondaryPurple,
     onSecondary = Color.White,
     secondaryContainer = SecondaryPurpleDark,
     onSecondaryContainer = Color.White,
     tertiary = AccentMagenta,
-    onTertiary = DarkBackgroundDeep,
+    onTertiary = Color.White,
     tertiaryContainer = DarkSurfaceElevated,
     onTertiaryContainer = OnDarkBackground,
     error = StatusError,
     onError = Color.White,
-    errorContainer = Color(0xFF93000A),
-    onErrorContainer = Color(0xFFFFDAD6),
+    errorContainer = Color(0xFF3D0E0E),
+    onErrorContainer = Color(0xFFFFDAD4),
     background = DarkBackground,
     onBackground = OnDarkBackground,
     surface = DarkSurface,
@@ -37,19 +36,19 @@ private val DarkColorScheme = darkColorScheme(
     surfaceVariant = DarkSurfaceVariant,
     onSurfaceVariant = OnDarkSurfaceVariant,
     outline = SurfaceGlassBorder,
-    outlineVariant = Color(0xFF31405B),
-    inverseSurface = Color(0xFFE6E1E5),
-    inverseOnSurface = Color(0xFF1C1B1F),
+    outlineVariant = Color(0xFF2C2C2E),
+    inverseSurface = Color(0xFFE5E5EA),
+    inverseOnSurface = Color(0xFF1C1C1E),
     inversePrimary = PrimaryTealDark,
     surfaceTint = PrimaryTeal
 )
 
 private val AppShapes = Shapes(
-    extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-    small = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-    medium = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
-    large = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
-    extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(32.dp)
+    extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+    small = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+    medium = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+    large = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+    extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(28.dp)
 )
 
 @Composable

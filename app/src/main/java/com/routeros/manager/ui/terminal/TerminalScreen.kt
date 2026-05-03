@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Router
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -59,14 +58,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.routeros.manager.ui.components.GlassButton
 import com.routeros.manager.ui.components.GlassCard
-import com.routeros.manager.ui.components.GlassFilterChip
 import com.routeros.manager.ui.components.GlassScaffold
 import com.routeros.manager.ui.components.GlassTextField
 import com.routeros.manager.ui.components.GlassTitleBar
-import com.routeros.manager.ui.components.animateGlassSize
+import com.routeros.manager.ui.theme.DarkSurfaceElevated
+import com.routeros.manager.ui.theme.DarkSurfaceVariant
+import com.routeros.manager.ui.theme.OnDarkSurface
+import com.routeros.manager.ui.theme.OnDarkSurfaceVariant
 import com.routeros.manager.ui.theme.PrimaryTeal
 import com.routeros.manager.ui.theme.PrimaryTealLight
-import com.routeros.manager.ui.theme.SecondaryPurple
 import com.routeros.manager.ui.theme.StatusError
 import com.routeros.manager.ui.theme.StatusSuccess
 import com.routeros.manager.ui.theme.StatusWarning
@@ -144,7 +144,7 @@ fun TerminalScreen(
                     }
                 },
                 placeholder = { Text("按设备名 / IP / MAC / 接口搜索") },
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(12.dp)
             )
 
             Box(modifier = Modifier.fillMaxSize()) {
@@ -189,7 +189,7 @@ fun TerminalScreen(
                                 uiState.error?.let {
                                     Text(
                                         text = it,
-                                        color = MaterialTheme.colorScheme.error,
+                                        color = StatusError,
                                         style = MaterialTheme.typography.bodySmall,
                                         modifier = Modifier.padding(bottom = 4.dp)
                                     )
@@ -229,9 +229,7 @@ private fun SummaryCard(
 ) {
     GlassCard(modifier = modifier) {
         Column(
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .animateGlassSize(),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
@@ -246,10 +244,10 @@ private fun SummaryCard(
                         tint = PrimaryTeal,
                         modifier = Modifier.size(18.dp)
                     )
-                    Text("设备总览", style = MaterialTheme.typography.titleLarge)
+                    Text("设备总览", style = MaterialTheme.typography.titleLarge, color = OnDarkSurface)
                 }
                 if (isRefreshing) {
-                    CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
+                    CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = PrimaryTeal)
                 }
             }
             Row(
@@ -266,7 +264,7 @@ private fun SummaryCard(
                 SummaryMetricTile(
                     modifier = Modifier.weight(1f),
                     icon = if (showOnlineOnly) Icons.Default.CheckCircle else Icons.Default.List,
-                    tint = if (showOnlineOnly) StatusSuccess else SecondaryPurple,
+                    tint = if (showOnlineOnly) StatusSuccess else PrimaryTeal,
                     label = if (showOnlineOnly) "仅在线" else "全部",
                     value = if (showOnlineOnly) "$onlineCount / $totalCount" else "$totalCount 台",
                     onClick = onToggleOnlineOnly
@@ -289,8 +287,8 @@ private fun SummaryMetricTile(
         modifier = modifier.then(
             if (onClick != null) Modifier.clickable { onClick() } else Modifier
         ),
-        shape = RoundedCornerShape(18.dp),
-        color = tint.copy(alpha = 0.12f)
+        shape = RoundedCornerShape(12.dp),
+        color = DarkSurfaceElevated
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
@@ -298,19 +296,19 @@ private fun SummaryMetricTile(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = tint.copy(alpha = 0.16f)
+                shape = RoundedCornerShape(8.dp),
+                color = tint.copy(alpha = 0.14f)
             ) {
                 Box(
-                    modifier = Modifier.padding(8.dp),
+                    modifier = Modifier.padding(6.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(16.dp))
                 }
             }
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(label, style = MaterialTheme.typography.labelSmall, color = OnDarkSurfaceVariant)
+                Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = OnDarkSurface)
             }
         }
     }
@@ -325,12 +323,12 @@ private fun DeviceCard(
 ) {
     val accent = statusColor(device.status)
     GlassCard(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.animateGlassSize()) {
+        Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onToggle)
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.Top
             ) {
                 Box(
@@ -351,6 +349,7 @@ private fun DeviceCard(
                             text = device.primaryAddress,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
+                            color = OnDarkSurface,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f)
@@ -360,12 +359,12 @@ private fun DeviceCard(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             if (device.interfaceDisplay != "--") {
-                                DeviceMetaPill(text = device.interfaceDisplay, tint = SecondaryPurple)
+                                DeviceMetaPill(text = device.interfaceDisplay, tint = PrimaryTeal)
                             }
                             Icon(
                                 imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                                 contentDescription = if (expanded) "收起" else "展开",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                tint = OnDarkSurfaceVariant
                             )
                         }
                     }
@@ -386,14 +385,14 @@ private fun DeviceCard(
                 exit = shrinkVertically()
             ) {
                 Column {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+                    HorizontalDivider(color = DarkSurfaceVariant, thickness = 0.5.dp)
                     Column(
                         modifier = Modifier.padding(14.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Surface(
-                            shape = RoundedCornerShape(14.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.18f)
+                            shape = RoundedCornerShape(10.dp),
+                            color = DarkSurfaceElevated
                         ) {
                             Column(
                                 modifier = Modifier.padding(12.dp),
@@ -433,22 +432,24 @@ private fun TrafficSection(device: TerminalDeviceUiModel) {
         ) {
             Surface(
                 modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(12.dp),
-                color = PrimaryTeal.copy(alpha = 0.12f)
+                shape = RoundedCornerShape(10.dp),
+                color = DarkSurfaceElevated
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
-                    Text("设备下载", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("设备下载", style = MaterialTheme.typography.labelSmall, color = OnDarkSurfaceVariant)
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(device.downloadRate, style = MaterialTheme.typography.bodyMedium, color = PrimaryTealLight, fontWeight = FontWeight.Medium)
                 }
             }
             Surface(
                 modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(12.dp),
-                color = SecondaryPurple.copy(alpha = 0.12f)
+                shape = RoundedCornerShape(10.dp),
+                color = DarkSurfaceElevated
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
-                    Text("设备上传", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(device.uploadRate, style = MaterialTheme.typography.bodyMedium, color = SecondaryPurple, fontWeight = FontWeight.Medium)
+                    Text("设备上传", style = MaterialTheme.typography.labelSmall, color = OnDarkSurfaceVariant)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(device.uploadRate, style = MaterialTheme.typography.bodyMedium, color = PrimaryTeal, fontWeight = FontWeight.Medium)
                 }
             }
         }
@@ -457,14 +458,14 @@ private fun TrafficSection(device: TerminalDeviceUiModel) {
                 Text(
                     text = if (device.trafficLoaded) "正在刷新设备流量..." else "正在加载设备流量...",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = OnDarkSurfaceVariant
                 )
             }
             device.trafficError != null -> {
                 Text(
                     text = device.trafficError,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
+                    color = StatusError
                 )
             }
         }
@@ -474,7 +475,7 @@ private fun TrafficSection(device: TerminalDeviceUiModel) {
 @Composable
 private fun DeviceMetaPill(text: String, tint: androidx.compose.ui.graphics.Color) {
     Surface(
-        shape = RoundedCornerShape(999.dp),
+        shape = RoundedCornerShape(6.dp),
         color = tint.copy(alpha = 0.14f)
     ) {
         Text(
@@ -492,13 +493,13 @@ private fun DetailLine(label: String, value: String) {
         Text(
             text = "$label：",
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = OnDarkSurfaceVariant,
             modifier = Modifier.width(64.dp)
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = OnDarkSurface,
             modifier = Modifier.weight(1f)
         )
     }
@@ -520,29 +521,29 @@ private fun TerminalSkeletonCard() {
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.30f)
+                        shape = RoundedCornerShape(8.dp),
+                        color = DarkSurfaceVariant
                     ) {
                         Box(modifier = Modifier.size(28.dp))
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Surface(
-                            shape = RoundedCornerShape(999.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.26f)
+                            shape = RoundedCornerShape(4.dp),
+                            color = DarkSurfaceVariant
                         ) {
                             Box(modifier = Modifier.width(72.dp).height(18.dp))
                         }
                         Surface(
-                            shape = RoundedCornerShape(999.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.18f)
+                            shape = RoundedCornerShape(4.dp),
+                            color = DarkSurfaceElevated
                         ) {
                             Box(modifier = Modifier.width(138.dp).height(14.dp))
                         }
                     }
                 }
                 Surface(
-                    shape = RoundedCornerShape(999.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.20f)
+                    shape = RoundedCornerShape(6.dp),
+                    color = DarkSurfaceElevated
                 ) {
                     Box(modifier = Modifier.width(46.dp).height(24.dp))
                 }
@@ -553,15 +554,15 @@ private fun TerminalSkeletonCard() {
             ) {
                 Surface(
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.20f)
+                    shape = RoundedCornerShape(8.dp),
+                    color = DarkSurfaceVariant
                 ) {
                     Box(modifier = Modifier.height(54.dp))
                 }
                 Surface(
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.16f)
+                    shape = RoundedCornerShape(8.dp),
+                    color = DarkSurfaceElevated
                 ) {
                     Box(modifier = Modifier.height(54.dp))
                 }
@@ -581,15 +582,15 @@ private fun EmptyState(title: String, message: String) {
             imageVector = Icons.Default.Router,
             contentDescription = null,
             modifier = Modifier.size(40.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            tint = OnDarkSurfaceVariant.copy(alpha = 0.6f)
         )
         Spacer(modifier = Modifier.height(12.dp))
-        Text(title, style = MaterialTheme.typography.titleMedium)
+        Text(title, style = MaterialTheme.typography.titleMedium, color = OnDarkSurface)
         Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = message,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = OnDarkSurfaceVariant
         )
     }
 }
