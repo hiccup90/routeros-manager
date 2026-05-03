@@ -17,8 +17,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.WifiOff
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -383,13 +383,13 @@ fun InterfaceCard(iface: HomeViewModel.InterfaceUiModel) {
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.ArrowDownward, null, modifier = Modifier.size(14.dp), tint = PrimaryTealLight)
+                        Icon(Icons.Outlined.ArrowDownward, null, modifier = Modifier.size(14.dp), tint = PrimaryTealLight)
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(iface.rxRate, style = MaterialTheme.typography.bodySmall, color = PrimaryTealLight)
                     }
                     Spacer(modifier = Modifier.height(2.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.ArrowUpward, null, modifier = Modifier.size(14.dp), tint = PrimaryTeal)
+                        Icon(Icons.Outlined.ArrowUpward, null, modifier = Modifier.size(14.dp), tint = PrimaryTeal)
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(iface.txRate, style = MaterialTheme.typography.bodySmall, color = PrimaryTeal)
                     }

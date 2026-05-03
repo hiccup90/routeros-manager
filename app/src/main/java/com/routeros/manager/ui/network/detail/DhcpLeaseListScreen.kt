@@ -16,9 +16,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.PushPin
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
@@ -84,7 +84,7 @@ fun DhcpLeaseListScreen(
                 },
                 actions = {
                     IconButton(onClick = { viewModel.loadData() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "刷新")
+                        Icon(Icons.Outlined.Refresh, contentDescription = "刷新")
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -254,14 +254,14 @@ fun DhcpLeaseListScreen(
                                                 text = "静态绑定",
                                                 onClick = { viewModel.showStaticBindingDialog(item) },
                                                 primary = false,
-                                                leadingIcon = Icons.Default.PushPin
+                                                leadingIcon = Icons.Outlined.PushPin
                                             )
                                         }
                                         GlassButton(
                                             text = "编辑",
                                             onClick = { viewModel.showEditDialog(item) },
                                             primary = false,
-                                            leadingIcon = Icons.Default.Edit
+                                            leadingIcon = Icons.Outlined.Edit
                                         )
                                     }
                                 }

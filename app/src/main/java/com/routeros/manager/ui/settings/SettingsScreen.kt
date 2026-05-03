@@ -15,18 +15,18 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.Cloud
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Lan
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Router
-import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.SelectAll
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
+import androidx.compose.material.icons.outlined.Cloud
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Lan
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Router
+import androidx.compose.material.icons.outlined.Save
+import androidx.compose.material.icons.outlined.SelectAll
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -106,7 +106,7 @@ fun SettingsScreen(
                         onValueChange = { viewModel.updateHost(it) },
                         label = { Text("主机地址") },
                         placeholder = { Text("https://router.example.com 或 192.168.1.1") },
-                        leadingIcon = { Icon(Icons.Default.Router, contentDescription = null) },
+                        leadingIcon = { Icon(Icons.Outlined.Router, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri)
@@ -116,7 +116,7 @@ fun SettingsScreen(
                         value = if (uiState.port == 0) "" else uiState.port.toString(),
                         onValueChange = { viewModel.updatePort(it) },
                         label = { Text("端口") },
-                        leadingIcon = { Icon(Icons.Default.Cloud, contentDescription = null) },
+                        leadingIcon = { Icon(Icons.Outlined.Cloud, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
@@ -127,7 +127,7 @@ fun SettingsScreen(
                         onValueChange = { viewModel.updateUsername(it) },
                         label = { Text("用户名") },
                         placeholder = { Text("admin") },
-                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                        leadingIcon = { Icon(Icons.Outlined.Person, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
@@ -136,11 +136,11 @@ fun SettingsScreen(
                         value = uiState.password,
                         onValueChange = { viewModel.updatePassword(it) },
                         label = { Text("密码") },
-                        leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                        leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null) },
                         trailingIcon = {
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Icon(
-                                    imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    imageVector = if (passwordVisible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                                     contentDescription = if (passwordVisible) "隐藏密码" else "显示密码"
                                 )
                             }
@@ -169,7 +169,7 @@ fun SettingsScreen(
                     onClick = { viewModel.saveConnection() },
                     modifier = Modifier.weight(1f),
                     primary = true,
-                    leadingIcon = Icons.Default.Save
+                    leadingIcon = Icons.Outlined.Save
                 )
             }
 
@@ -186,7 +186,7 @@ fun SettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Lan, contentDescription = null, tint = PrimaryTeal, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Outlined.Lan, contentDescription = null, tint = PrimaryTeal, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = if (uiState.selectedInterfaces.isEmpty()) "显示前 3 个接口" else "已选择 ${uiState.selectedInterfaces.size} 个",
@@ -196,10 +196,10 @@ fun SettingsScreen(
                         }
                         Row {
                             IconButton(onClick = { viewModel.selectAllInterfaces() }) {
-                                Icon(Icons.Default.SelectAll, contentDescription = "全选", modifier = Modifier.size(20.dp))
+                                Icon(Icons.Outlined.SelectAll, contentDescription = "全选", modifier = Modifier.size(20.dp))
                             }
                             IconButton(onClick = { viewModel.clearInterfaceSelection() }) {
-                                Icon(Icons.Default.Delete, contentDescription = "清空", modifier = Modifier.size(20.dp), tint = OnDarkSurfaceVariant)
+                                Icon(Icons.Outlined.Delete, contentDescription = "清空", modifier = Modifier.size(20.dp), tint = OnDarkSurfaceVariant)
                             }
                         }
                     }
@@ -233,13 +233,13 @@ fun SettingsScreen(
                                 Text(text = name, style = MaterialTheme.typography.bodyMedium, color = OnDarkSurface, modifier = Modifier.weight(1f))
                                 if (checked) {
                                     IconButton(onClick = { viewModel.moveInterface(name, -1) }, enabled = selectedIndex > 0) {
-                                        Icon(Icons.Default.ArrowUpward, contentDescription = "上移")
+                                        Icon(Icons.Outlined.ArrowUpward, contentDescription = "上移")
                                     }
                                     IconButton(
                                         onClick = { viewModel.moveInterface(name, 1) },
                                         enabled = selectedIndex in 0 until uiState.selectedInterfaces.lastIndex
                                     ) {
-                                        Icon(Icons.Default.ArrowDownward, contentDescription = "下移")
+                                        Icon(Icons.Outlined.ArrowDownward, contentDescription = "下移")
                                     }
                                 }
                             }
@@ -263,7 +263,7 @@ fun SettingsScreen(
                         text = "清除全部数据",
                         onClick = { viewModel.clearAllData() },
                         primary = false,
-                        leadingIcon = Icons.Default.Delete,
+                        leadingIcon = Icons.Outlined.Delete,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }

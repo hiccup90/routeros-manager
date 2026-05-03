@@ -22,15 +22,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Devices
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Router
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Clear
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Devices
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.List
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Router
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -106,7 +106,7 @@ fun TerminalScreen(
                 title = "设备",
                 trailing = {
                     IconButton(onClick = viewModel::refresh) {
-                        Icon(Icons.Default.Refresh, contentDescription = "刷新")
+                        Icon(Icons.Outlined.Refresh, contentDescription = "刷新")
                     }
                 }
             )
@@ -135,11 +135,11 @@ fun TerminalScreen(
                 onValueChange = viewModel::updateQuery,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                 trailingIcon = {
                     if (uiState.query.isNotEmpty()) {
                         IconButton(onClick = { viewModel.updateQuery("") }) {
-                            Icon(Icons.Default.Clear, contentDescription = "清空搜索")
+                            Icon(Icons.Outlined.Clear, contentDescription = "清空搜索")
                         }
                     }
                 },
@@ -239,7 +239,7 @@ private fun SummaryCard(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Icon(
-                        Icons.Default.Devices,
+                        Icons.Outlined.Devices,
                         contentDescription = null,
                         tint = PrimaryTeal,
                         modifier = Modifier.size(18.dp)
@@ -256,14 +256,14 @@ private fun SummaryCard(
             ) {
                 SummaryMetricTile(
                     modifier = Modifier.weight(1f),
-                    icon = Icons.Default.Devices,
+                    icon = Icons.Outlined.Devices,
                     tint = PrimaryTeal,
                     label = "设备数",
                     value = if (query.isBlank()) "$deviceCount 台" else "$deviceCount 台匹配"
                 )
                 SummaryMetricTile(
                     modifier = Modifier.weight(1f),
-                    icon = if (showOnlineOnly) Icons.Default.CheckCircle else Icons.Default.List,
+                    icon = if (showOnlineOnly) Icons.Outlined.CheckCircle else Icons.Outlined.List,
                     tint = if (showOnlineOnly) StatusSuccess else PrimaryTeal,
                     label = if (showOnlineOnly) "仅在线" else "全部",
                     value = if (showOnlineOnly) "$onlineCount / $totalCount" else "$totalCount 台",
@@ -362,7 +362,7 @@ private fun DeviceCard(
                                 DeviceMetaPill(text = device.interfaceDisplay, tint = PrimaryTeal)
                             }
                             Icon(
-                                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                imageVector = if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
                                 contentDescription = if (expanded) "收起" else "展开",
                                 tint = OnDarkSurfaceVariant
                             )
@@ -579,7 +579,7 @@ private fun EmptyState(title: String, message: String) {
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Default.Router,
+            imageVector = Icons.Outlined.Router,
             contentDescription = null,
             modifier = Modifier.size(40.dp),
             tint = OnDarkSurfaceVariant.copy(alpha = 0.6f)

@@ -17,13 +17,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.Hub
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.SettingsEthernet
-import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.Dns
+import androidx.compose.material.icons.outlined.Hub
+import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material.icons.outlined.SettingsEthernet
+import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -68,10 +68,10 @@ fun Ipv4FirewallHubScreen(
         description = "保留高频 IPv4 防火墙能力：Filter、NAT、Address Lists、Mangle、连接统计。",
         onNavigateBack = onNavigateBack,
         entries = listOf(
-            HubEntry("Filter", "增删改、启停 IPv4 访问控制规则", Icons.Default.Security, StatusWarning, onOpenFilterRules),
-            HubEntry("NAT", "端口转发、源地址转换与重定向", Icons.Default.SwapHoriz, PrimaryTeal, onOpenNatRules),
-            HubEntry("Address Lists", "维护防火墙地址列表", Icons.Default.Dns, StatusWarning, onOpenAddressLists),
-            HubEntry("Mangle", "连接标记、路由标记、报文标记", Icons.Default.Hub, SecondaryPurple, onOpenMangle),
+            HubEntry("Filter", "增删改、启停 IPv4 访问控制规则", Icons.Outlined.Security, StatusWarning, onOpenFilterRules),
+            HubEntry("NAT", "端口转发、源地址转换与重定向", Icons.Outlined.SwapHoriz, PrimaryTeal, onOpenNatRules),
+            HubEntry("Address Lists", "维护防火墙地址列表", Icons.Outlined.Dns, StatusWarning, onOpenAddressLists),
+            HubEntry("Mangle", "连接标记、路由标记、报文标记", Icons.Outlined.Hub, SecondaryPurple, onOpenMangle),
             HubEntry("连接统计", "查看总连接数、TCP / UDP、已建立连接", Icons.AutoMirrored.Filled.List, SecondaryPurple, onOpenConnections)
         )
     )
@@ -90,9 +90,9 @@ fun Ipv6FirewallHubScreen(
         description = "保留高频 IPv6 防火墙能力：Filter、Address Lists、Mangle、连接统计。",
         onNavigateBack = onNavigateBack,
         entries = listOf(
-            HubEntry("Filter", "增删改、启停 IPv6 input / forward / output 规则", Icons.Default.Security, PrimaryTeal, onOpenFilterRules),
-            HubEntry("Address Lists", "维护 IPv6 防火墙地址列表", Icons.Default.Dns, StatusWarning, onOpenAddressLists),
-            HubEntry("Mangle", "IPv6 报文与连接标记规则", Icons.Default.Hub, SecondaryPurple, onOpenMangle),
+            HubEntry("Filter", "增删改、启停 IPv6 input / forward / output 规则", Icons.Outlined.Security, PrimaryTeal, onOpenFilterRules),
+            HubEntry("Address Lists", "维护 IPv6 防火墙地址列表", Icons.Outlined.Dns, StatusWarning, onOpenAddressLists),
+            HubEntry("Mangle", "IPv6 报文与连接标记规则", Icons.Outlined.Hub, SecondaryPurple, onOpenMangle),
             HubEntry("连接统计", "查看总连接数、TCP / UDP、已建立连接", Icons.AutoMirrored.Filled.List, SecondaryPurple, onOpenConnections)
         )
     )
@@ -120,14 +120,14 @@ fun AddressAllocationScreen(
             HubEntry(
                 title = "DHCP 网络",
                 subtitle = "编辑网段下发的网关与 DNS 参数",
-                icon = Icons.Default.Dns,
+                icon = Icons.Outlined.Dns,
                 tint = SecondaryPurple,
                 onClick = onOpenDhcpNetworks
             ),
             HubEntry(
                 title = "DHCP 服务器",
                 subtitle = "查看服务端配置并执行启用 / 停用",
-                icon = Icons.Default.SettingsEthernet,
+                icon = Icons.Outlined.SettingsEthernet,
                 tint = StatusInfo,
                 onClick = onOpenDhcpServers
             )
@@ -149,14 +149,14 @@ fun IpManagementScreen(
             HubEntry(
                 title = "IPv4 地址",
                 subtitle = "增删改、启停 IPv4 地址项",
-                icon = Icons.Default.SettingsEthernet,
+                icon = Icons.Outlined.SettingsEthernet,
                 tint = PrimaryTeal,
                 onClick = onOpenIpv4Addresses
             ),
             HubEntry(
                 title = "IPv6 地址",
                 subtitle = "增删改、启停 IPv6 地址项",
-                icon = Icons.Default.Language,
+                icon = Icons.Outlined.Language,
                 tint = StatusInfo,
                 onClick = onOpenIpv6Addresses
             )
@@ -178,7 +178,7 @@ fun AdvancedNetworkScreen(
             HubEntry(
                 title = "DNS 静态记录",
                 subtitle = "增删改、启停本地解析记录",
-                icon = Icons.Default.Dns,
+                icon = Icons.Outlined.Dns,
                 tint = PrimaryTeal,
                 onClick = onOpenDns
             )
@@ -287,7 +287,7 @@ private fun HubEntryCard(item: HubEntry) {
                 }
             }
             Icon(
-                imageVector = Icons.Default.ChevronRight,
+                imageVector = Icons.Outlined.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )

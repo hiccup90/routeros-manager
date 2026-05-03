@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.Dns
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -53,7 +53,7 @@ fun IpDnsSettingsScreen(
                 },
                 actions = {
                     IconButton(onClick = viewModel::loadData) {
-                        Icon(Icons.Default.Refresh, contentDescription = "刷新")
+                        Icon(Icons.Outlined.Refresh, contentDescription = "刷新")
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -149,7 +149,7 @@ private fun DnsNavCard(onClick: () -> Unit) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.82f))
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Icon(Icons.Default.Dns, contentDescription = null, tint = PrimaryTeal)
+            Icon(Icons.Outlined.Dns, contentDescription = null, tint = PrimaryTeal)
             Text("DNS 静态记录", style = MaterialTheme.typography.titleMedium)
             Text(
                 text = "增删改、启停本地解析记录",

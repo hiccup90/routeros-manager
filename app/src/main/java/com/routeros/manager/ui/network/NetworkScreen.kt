@@ -16,11 +16,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.SettingsEthernet
+import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.Dns
+import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material.icons.outlined.SettingsEthernet
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -68,10 +68,10 @@ fun NetworkScreen(
             title = "常用功能",
             subtitle = "最常访问的网络配置入口。",
             actions = listOf(
-                NetworkQuickAction("IP 地址", "编辑接口地址与网络归属", Icons.Default.SettingsEthernet, PrimaryTeal, "编辑") {
+                NetworkQuickAction("IP 地址", "编辑接口地址与网络归属", Icons.Outlined.SettingsEthernet, PrimaryTeal, "编辑") {
                     navController.navigate(NetworkRoutes.IP_MANAGEMENT)
                 },
-                NetworkQuickAction("DNS 静态记录", "增删改、启停本地解析记录", Icons.Default.Dns, SecondaryPurple, "DNS") {
+                NetworkQuickAction("DNS 静态记录", "增删改、启停本地解析记录", Icons.Outlined.Dns, SecondaryPurple, "DNS") {
                     navController.navigate(NetworkRoutes.DNS_RECORDS)
                 }
             )
@@ -80,10 +80,10 @@ fun NetworkScreen(
             title = "防火墙",
             subtitle = "管理 IPv4 与 IPv6 的连接、规则和地址列表。",
             actions = listOf(
-                NetworkQuickAction("IPv4 防火墙", "查看连接、规则与地址列表", Icons.Default.Security, StatusWarning, "策略") {
+                NetworkQuickAction("IPv4 防火墙", "查看连接、规则与地址列表", Icons.Outlined.Security, StatusWarning, "策略") {
                     navController.navigate(NetworkRoutes.IPV4_FIREWALL_HUB)
                 },
-                NetworkQuickAction("IPv6 防火墙", "单独管理 IPv6 规则与地址对象", Icons.Default.Language, PrimaryTeal, "独立") {
+                NetworkQuickAction("IPv6 防火墙", "单独管理 IPv6 规则与地址对象", Icons.Outlined.Language, PrimaryTeal, "独立") {
                     navController.navigate(NetworkRoutes.IPV6_FIREWALL_HUB)
                 }
             )
@@ -186,7 +186,7 @@ private fun QuickActionRow(action: NetworkQuickAction) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    Icons.Default.ChevronRight,
+                    Icons.Outlined.ChevronRight,
                     contentDescription = null,
                     tint = OnDarkSurfaceVariant,
                     modifier = Modifier.size(18.dp)

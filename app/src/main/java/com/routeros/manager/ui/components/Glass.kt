@@ -77,10 +77,10 @@ fun GlassCard(
     Card(
         modifier = modifier
             .shadow(
-                elevation = 2.dp,
+                elevation = 0.dp,
                 shape = GlassCardShape,
-                ambientColor = Color.Black.copy(alpha = 0.3f),
-                spotColor = Color.Black.copy(alpha = 0.3f)
+                ambientColor = Color.Transparent,
+                spotColor = Color.Transparent
             )
             .clip(GlassCardShape)
             .then(clickableModifier),
@@ -88,6 +88,7 @@ fun GlassCard(
         colors = CardDefaults.cardColors(
             containerColor = DarkSurface
         ),
+        border = androidx.compose.foundation.BorderStroke(0.5.dp, SurfaceGlassBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         content()
