@@ -76,7 +76,7 @@ fun FirewallAddressListScreen(
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding).background(MaterialTheme.colorScheme.background)) {
             when {
-                uiState.isLoading && uiState.items.isEmpty() -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                uiState.isLoading && uiState.items.isEmpty() -> DetailListSkeleton()
                 uiState.items.isEmpty() -> Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Text("暂无 IPv4 Address List", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }

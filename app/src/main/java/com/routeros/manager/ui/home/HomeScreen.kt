@@ -63,10 +63,6 @@ fun HomeScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(Unit) {
-        viewModel.ensurePollingState()
-    }
-
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
@@ -127,7 +123,15 @@ fun HomeScreen(
                             memoryUsed = uiState.memoryUsed,
                             memoryTotal = uiState.memoryTotal,
                             uptime = uiState.uptime,
-                            version = uiState.version
+                            version = uiState.version,
+                            boardName = uiState.boardName
+                        )
+                    }
+
+                    item {
+                        HomeSectionHeader(
+                            title = "高频接口",
+                            subtitle = if (uiState.interfaces.isEmpty()) "当前没有可展示的接口数据" else "聚焦最常用的接口状态与上下行速率"
                         )
                     }
 
@@ -156,7 +160,8 @@ private fun HomeSummaryCard(
     memoryUsed: Long,
     memoryTotal: Long,
     uptime: String,
-    version: String
+    version: String,
+    boardName: String
 ) {
     val cpuLoadPercent = remember(cpuLoad) { cpuLoad.toIntOrNull() ?: 0 }
     val memoryUsedText = remember(memoryUsed) { formatBytes(memoryUsed) }
@@ -223,8 +228,56 @@ private fun HomeSummaryCard(
                 )
             }
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                HomeInfoTile(
+                    modifier = Modifier.weight(1f),
+                    label = "系统版本",
+                    value = version
+                )
+                HomeInfoTile(
+                    modifier = Modifier.weight(1f),
+                    label = "设备型号",
+                    value = boardName
+                )
+            }
+
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
             Text(text = "运行时间：$uptime", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun HomeSectionHeader(
+    title: String,
+    subtitle: String
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(text = title, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
+        Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun HomeInfoTile(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f)
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(text = label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = value.ifBlank { "--" }, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }

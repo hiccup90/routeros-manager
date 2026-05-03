@@ -50,7 +50,7 @@ fun Ipv6AddressListScreen(
         Box(modifier = Modifier.fillMaxSize().padding(padding).background(MaterialTheme.colorScheme.background)) {
             when {
                 uiState.isLoading && uiState.items.isEmpty() ->
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                    DetailListSkeleton()
                 uiState.items.isEmpty() ->
                     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                         Text("暂无 IPv6 地址", color = MaterialTheme.colorScheme.onSurfaceVariant)

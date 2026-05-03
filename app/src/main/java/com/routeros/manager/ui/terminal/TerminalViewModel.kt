@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-private const val DEVICE_LIST_REFRESH_MS = 3000L
+private const val DEVICE_LIST_REFRESH_MS = 5000L
 private const val DEVICE_TRAFFIC_REFRESH_MS = 5000L
 
 data class TerminalDeviceUiModel(
@@ -86,14 +86,31 @@ class TerminalViewModel @Inject constructor(
     private val expandedDeviceKeys = mutableSetOf<String>()
 
     init {
+        ensurePollingState()
+    }
+
+    fun ensurePollingState() {
         if (repository.isConfigured()) {
-            startPolling()
-        } else {
             _uiState.update {
                 it.copy(
+                    isConfigured = true,
+                    error = null
+                )
+            }
+            if (pollingJob?.isActive != true) {
+                startPolling()
+            }
+        } else {
+            stopPolling()
+            contentState.value = TerminalContentState()
+            _uiState.update {
+                it.copy(
+                    devices = emptyList(),
                     isLoading = false,
+                    isRefreshing = false,
                     isConfigured = false,
-                    error = "请先在设置中配置 RouterOS 连接"
+                    error = "请先在设置中配置 RouterOS 连接",
+                    lastUpdatedAt = null
                 )
             }
         }
@@ -126,6 +143,10 @@ class TerminalViewModel @Inject constructor(
     }
 
     fun refresh() {
+        if (!repository.isConfigured()) {
+            ensurePollingState()
+            return
+        }
         if (loadJob?.isActive == true) return
         loadJob = viewModelScope.launch {
             loadDevices(forceRefresh = true)
@@ -151,6 +172,11 @@ class TerminalViewModel @Inject constructor(
                 loadDevices(forceRefresh = true)
             }
         }
+    }
+
+    fun stopPolling() {
+        pollingJob?.cancel()
+        pollingJob = null
     }
 
     private suspend fun loadDevices(forceRefresh: Boolean = false) {

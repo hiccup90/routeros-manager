@@ -56,7 +56,15 @@ fun Ipv6FirewallConnectionListScreen(
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding).background(MaterialTheme.colorScheme.background)) {
             if (uiState.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    SummarySkeletonCard()
+                    SummarySkeletonCard()
+                    SummarySkeletonCard()
+                    SummarySkeletonCard()
+                }
             } else {
                 Column(
                     modifier = Modifier.fillMaxSize().padding(16.dp),

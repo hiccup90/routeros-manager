@@ -107,9 +107,7 @@ fun IpAddressListScreen(
         ) {
             when {
                 uiState.isLoading && uiState.items.isEmpty() -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
+                    DetailListSkeleton()
                 }
                 uiState.error != null && uiState.items.isEmpty() -> {
                     Column(

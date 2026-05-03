@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Router
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -38,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -46,10 +48,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.routeros.manager.ui.components.GlassButton
 import com.routeros.manager.ui.components.GlassCard
 import com.routeros.manager.ui.components.GlassFilterChip
@@ -62,6 +67,7 @@ import com.routeros.manager.ui.theme.PrimaryTealLight
 import com.routeros.manager.ui.theme.SecondaryPurple
 import com.routeros.manager.ui.theme.StatusError
 import com.routeros.manager.ui.theme.StatusSuccess
+import com.routeros.manager.ui.theme.StatusWarning
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -73,6 +79,7 @@ fun TerminalScreen(
     onOpenNetworkConfig: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
     val expandedMap = rememberSaveable(
         saver = androidx.compose.runtime.saveable.mapSaver(
             save = { state -> state.toMap() },
@@ -80,6 +87,18 @@ fun TerminalScreen(
         )
     ) {
         mutableStateMapOf<String, Boolean>()
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> viewModel.ensurePollingState()
+                Lifecycle.Event.ON_PAUSE -> viewModel.stopPolling()
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     GlassScaffold(
@@ -98,34 +117,16 @@ fun TerminalScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp, vertical = 6.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(horizontal = 16.dp, vertical = 2.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             SummaryCard(
                 deviceCount = uiState.devices.size,
                 query = uiState.query,
-                showOnlineOnly = uiState.showOnlineOnly,
                 isRefreshing = uiState.isRefreshing,
+                lastUpdatedAt = uiState.lastUpdatedAt,
                 modifier = Modifier.fillMaxWidth()
             )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                GlassFilterChip(
-                    selected = !uiState.showOnlineOnly,
-                    onClick = { viewModel.setShowOnlineOnly(false) },
-                    label = { Text("全部设备") },
-                    modifier = Modifier.weight(1f)
-                )
-                GlassFilterChip(
-                    selected = uiState.showOnlineOnly,
-                    onClick = { viewModel.setShowOnlineOnly(true) },
-                    label = { Text("仅在线") },
-                    modifier = Modifier.weight(1f)
-                )
-            }
 
             GlassTextField(
                 value = uiState.query,
@@ -146,17 +147,23 @@ fun TerminalScreen(
 
             Box(modifier = Modifier.fillMaxSize()) {
                 when {
-                    uiState.isLoading -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator()
-                        }
-                    }
-
                     !uiState.isConfigured -> {
                         EmptyState(
                             title = "未配置连接",
                             message = uiState.error ?: "请先在设置中填写 RouterOS 地址、用户名和密码"
                         )
+                    }
+
+                    uiState.isLoading && uiState.devices.isEmpty() -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = 18.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(3) {
+                                TerminalSkeletonCard()
+                            }
+                        }
                     }
 
                     uiState.devices.isEmpty() -> {
@@ -211,14 +218,14 @@ fun TerminalScreen(
 private fun SummaryCard(
     deviceCount: Int,
     query: String,
-    showOnlineOnly: Boolean,
     isRefreshing: Boolean,
+    lastUpdatedAt: Long?,
     modifier: Modifier = Modifier
 ) {
     GlassCard(modifier = modifier) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 14.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
                 .animateGlassSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -227,45 +234,82 @@ private fun SummaryCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(
-                        text = "DEVICE CONSOLE",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = PrimaryTeal
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(
+                        Icons.Default.Devices,
+                        contentDescription = null,
+                        tint = PrimaryTeal,
+                        modifier = Modifier.size(18.dp)
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.Devices,
-                            contentDescription = null,
-                            tint = PrimaryTeal,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("设备总览", style = MaterialTheme.typography.titleMedium)
-                    }
+                    Text("设备总览", style = MaterialTheme.typography.titleLarge)
                 }
                 if (isRefreshing) {
-                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                    CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
                 }
             }
-            Text(
-                text = buildString {
-                    append(if (query.isBlank()) "$deviceCount 台设备" else "筛选后 $deviceCount 台")
-                    append(if (showOnlineOnly) " · 在线优先" else " · 全部视图")
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Surface(
-                shape = RoundedCornerShape(14.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = if (query.isBlank()) "按设备名、IP、MAC 或接口快速定位终端。" else "当前已启用关键词过滤，可继续缩小设备范围。",
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                SummaryMetricTile(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.Devices,
+                    tint = PrimaryTeal,
+                    label = "设备数",
+                    value = if (query.isBlank()) "$deviceCount 台" else "$deviceCount 台匹配"
                 )
+                lastUpdatedAt?.let {
+                    SummaryMetricTile(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Refresh,
+                        tint = SecondaryPurple,
+                        label = "最近刷新",
+                        value = formatTimestamp(it)
+                    )
+                } ?: SummaryMetricTile(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.Search,
+                    tint = SecondaryPurple,
+                    label = "搜索",
+                    value = if (query.isBlank()) "未筛选" else "筛选中"
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SummaryMetricTile(
+    modifier: Modifier = Modifier,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    tint: androidx.compose.ui.graphics.Color,
+    label: String,
+    value: String
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(18.dp),
+        color = tint.copy(alpha = 0.12f)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = tint.copy(alpha = 0.16f)
+            ) {
+                Box(
+                    modifier = Modifier.padding(8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(16.dp))
+                }
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             }
         }
     }
@@ -280,35 +324,50 @@ private fun DeviceCard(
 ) {
     val accent = statusColor(device.status)
     GlassCard(modifier = Modifier.fillMaxWidth()) {
-        Column {
+        Column(modifier = Modifier.animateGlassSize()) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onToggle)
-                    .padding(horizontal = 14.dp, vertical = 11.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.Top
             ) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = accent.copy(alpha = 0.14f)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 10.dp, vertical = 8.dp)
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(accent)
-                    )
-                }
+                Box(
+                    modifier = Modifier
+                        .padding(top = 6.dp)
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(accent)
+                )
                 Spacer(modifier = Modifier.width(10.dp))
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(
-                        text = device.displayName,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Text(
+                            text = device.displayName,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            if (device.interfaceDisplay != "--") {
+                                DeviceMetaPill(text = device.interfaceDisplay, tint = SecondaryPurple)
+                            }
+                            Icon(
+                                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                contentDescription = if (expanded) "收起" else "展开",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                     Text(
                         text = device.primaryAddress,
                         style = MaterialTheme.typography.bodySmall,
@@ -316,14 +375,7 @@ private fun DeviceCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    SourceChips(device.sources)
                 }
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(
-                    imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = if (expanded) "收起" else "展开",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
 
             AnimatedVisibility(
@@ -345,7 +397,8 @@ private fun DeviceCard(
                                 modifier = Modifier.padding(12.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                DetailLine("MAC", device.macAddress)
+                                DetailLine("DHCP", device.status)
+                                DetailLine("ARP", device.macAddress)
                                 DetailLine("IPv6", device.ipv6Display)
                                 DetailLine("接口", device.interfaceDisplay)
                             }
@@ -417,22 +470,17 @@ private fun TrafficSection(device: TerminalDeviceUiModel) {
 }
 
 @Composable
-private fun SourceChips(sources: List<String>) {
-    if (sources.isEmpty()) return
-    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        sources.take(3).forEach { source ->
-            Surface(
-                shape = RoundedCornerShape(999.dp),
-                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f)
-            ) {
-                Text(
-                    text = source,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            }
-        }
+private fun DeviceMetaPill(text: String, tint: androidx.compose.ui.graphics.Color) {
+    Surface(
+        shape = RoundedCornerShape(999.dp),
+        color = tint.copy(alpha = 0.14f)
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = tint
+        )
     }
 }
 
@@ -451,6 +499,72 @@ private fun DetailLine(label: String, value: String) {
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
+    }
+}
+
+@Composable
+private fun TerminalSkeletonCard() {
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.30f)
+                    ) {
+                        Box(modifier = Modifier.size(28.dp))
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Surface(
+                            shape = RoundedCornerShape(999.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.26f)
+                        ) {
+                            Box(modifier = Modifier.width(72.dp).height(18.dp))
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(999.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.18f)
+                        ) {
+                            Box(modifier = Modifier.width(138.dp).height(14.dp))
+                        }
+                    }
+                }
+                Surface(
+                    shape = RoundedCornerShape(999.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.20f)
+                ) {
+                    Box(modifier = Modifier.width(46.dp).height(24.dp))
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Surface(
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.20f)
+                ) {
+                    Box(modifier = Modifier.height(54.dp))
+                }
+                Surface(
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.16f)
+                ) {
+                    Box(modifier = Modifier.height(54.dp))
+                }
+            }
+        }
     }
 }
 
@@ -481,6 +595,7 @@ private fun EmptyState(title: String, message: String) {
 private fun statusColor(status: String) = when {
     status.contains("bound", ignoreCase = true) || status.contains("complete", ignoreCase = true) -> StatusSuccess
     status.contains("incomplete", ignoreCase = true) || status.contains("failed", ignoreCase = true) -> StatusError
+    status.contains("waiting", ignoreCase = true) || status.contains("offer", ignoreCase = true) -> StatusWarning
     else -> PrimaryTeal
 }
 

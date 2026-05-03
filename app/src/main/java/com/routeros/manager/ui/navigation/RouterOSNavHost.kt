@@ -49,31 +49,23 @@ fun RouterOSNavHost(
         modifier = modifier.fillMaxSize()
     ) {
         composable(Screen.Home.route) {
-            GlassPageTransition {
-                HomeScreen()
-            }
+            HomeScreen()
         }
 
         composable(Screen.Terminal.route) {
-            GlassPageTransition {
-                TerminalScreen(
-                    onOpenNetworkConfig = { query ->
-                        navController.navigate("${NetworkRoutes.DHCP_LEASES_BASE}?query=${Uri.encode(query)}")
-                    }
-                )
-            }
+            TerminalScreen(
+                onOpenNetworkConfig = { query ->
+                    navController.navigate("${NetworkRoutes.DHCP_LEASES_BASE}?query=${Uri.encode(query)}")
+                }
+            )
         }
 
         composable(Screen.Network.route) {
-            GlassPageTransition {
-                NetworkScreen(navController = navController)
-            }
+            NetworkScreen(navController = navController)
         }
 
         composable(Screen.Settings.route) {
-            GlassPageTransition {
-                SettingsScreen()
-            }
+            SettingsScreen()
         }
 
         composable(NetworkRoutes.IPV4_FIREWALL_HUB) {

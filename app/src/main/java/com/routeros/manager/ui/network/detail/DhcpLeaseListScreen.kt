@@ -102,8 +102,18 @@ fun DhcpLeaseListScreen(
         ) {
             when {
                 uiState.isLoading && uiState.items.isEmpty() -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        GlassTextField(
+                            value = uiState.query,
+                            onValueChange = {},
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            singleLine = true,
+                            readOnly = true,
+                            label = { Text("筛选设备 / IP / MAC") }
+                        )
+                        DetailListSkeleton(itemCount = 4)
                     }
                 }
 

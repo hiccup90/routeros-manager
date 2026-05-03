@@ -58,13 +58,18 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.routeros.manager.ui.theme.AccentMagenta
+import com.routeros.manager.ui.theme.PrimaryTeal
+import com.routeros.manager.ui.theme.SurfaceGlassBorder
+import com.routeros.manager.ui.theme.SurfaceGlassMedium
+import com.routeros.manager.ui.theme.SurfaceGlassOverlay
 
 val GlassCardShape = RoundedCornerShape(24.dp)
 
 @Composable
 fun glassContainerColor(): Color {
     return if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-        Color(0xCC121826)
+        Color(0xD9111A2C)
     } else {
         Color.White.copy(alpha = 0.18f)
     }
@@ -73,12 +78,12 @@ fun glassContainerColor(): Color {
 @Composable
 fun glassBorderBrush(): Brush {
     val light = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-        Color.White.copy(alpha = 0.22f)
+        SurfaceGlassBorder
     } else {
         Color.White.copy(alpha = 0.46f)
     }
     val soft = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-        Color(0xFF8FA8FF).copy(alpha = 0.10f)
+        PrimaryTeal.copy(alpha = 0.14f)
     } else {
         Color.White.copy(alpha = 0.18f)
     }
@@ -107,26 +112,33 @@ fun GlassCard(
 
     val highlightBrush = Brush.verticalGradient(
         colors = listOf(
-            Color.White.copy(alpha = 0.10f),
-            Color.White.copy(alpha = 0.03f),
+            SurfaceGlassMedium.copy(alpha = 0.28f),
+            Color.White.copy(alpha = 0.008f),
             Color.Transparent
         )
     )
     val depthBrush = Brush.verticalGradient(
         colors = listOf(
-            Color.Transparent,
-            Color.Black.copy(alpha = 0.05f),
-            Color.Black.copy(alpha = 0.12f)
+            SurfaceGlassOverlay,
+            Color.Black.copy(alpha = 0.06f),
+            Color.Black.copy(alpha = 0.16f)
+        )
+    )
+    val accentGlow = Brush.linearGradient(
+        colors = listOf(
+            PrimaryTeal.copy(alpha = 0.08f),
+            AccentMagenta.copy(alpha = 0.04f),
+            Color.Transparent
         )
     )
 
     Card(
         modifier = modifier
             .shadow(
-                elevation = 12.dp,
+                elevation = 18.dp,
                 shape = GlassCardShape,
-                ambientColor = Color.Black.copy(alpha = 0.18f),
-                spotColor = Color.Black.copy(alpha = 0.12f)
+                ambientColor = Color.Black.copy(alpha = 0.22f),
+                spotColor = PrimaryTeal.copy(alpha = 0.10f)
             )
             .clip(GlassCardShape)
             .background(glassContainerColor(), GlassCardShape)
@@ -140,8 +152,14 @@ fun GlassCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(88.dp)
+                    .height(24.dp)
                     .background(highlightBrush)
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(14.dp)
+                    .background(accentGlow)
             )
             content()
         }
@@ -307,7 +325,7 @@ fun GlassTitleBar(
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
             maxLines = 1
         )
@@ -363,11 +381,11 @@ fun GlassScreenContainer(
 fun AnimatedGradientBackground(modifier: Modifier = Modifier) {
     val background = Brush.linearGradient(
         colors = listOf(
-            Color(0xFF0B1020),
-            Color(0xFF171E3B),
-            Color(0xFF2A2E68),
-            Color(0xFF3B1F4A),
-            Color(0xFF10243D)
+            Color(0xFF09111F),
+            Color(0xFF151F39),
+            Color(0xFF222B58),
+            Color(0xFF3A2353),
+            Color(0xFF0B213B)
         ),
         start = Offset(120f, 0f),
         end = Offset(1280f, 2200f)
@@ -375,9 +393,9 @@ fun AnimatedGradientBackground(modifier: Modifier = Modifier) {
 
     val glow = Brush.radialGradient(
         colors = listOf(
-            Color(0x524DD0E1),
+            PrimaryTeal.copy(alpha = 0.34f),
             Color(0x305E7CFF),
-            Color(0x18FF8AB3),
+            AccentMagenta.copy(alpha = 0.12f),
             Color.Transparent
         ),
         center = Offset(320f, 360f),
@@ -402,11 +420,7 @@ fun GlassPageTransition(
     AnimatedVisibility(
         visible = visible,
         modifier = modifier,
-        enter = fadeIn(animationSpec = tween(durationMillis = 180)) +
-            slideInHorizontally(
-                initialOffsetX = { it / 12 },
-                animationSpec = tween(durationMillis = 220)
-            )
+        enter = fadeIn(animationSpec = tween(durationMillis = 110))
     ) {
         content()
     }

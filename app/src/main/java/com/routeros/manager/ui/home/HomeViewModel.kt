@@ -20,6 +20,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
+private const val HOME_REFRESH_MS = 5000L
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: RouterOSRepository,
@@ -71,7 +73,9 @@ class HomeViewModel @Inject constructor(
 
     fun ensurePollingState() {
         if (repository.isConfigured()) {
-            startPolling()
+            if (pollingJob?.isActive != true) {
+                startPolling()
+            }
         } else {
             stopPolling()
             securePreferences.isConnected = false
@@ -245,7 +249,7 @@ class HomeViewModel @Inject constructor(
         pollingJob = viewModelScope.launch {
             refresh()
             while (isActive) {
-                delay(3000)
+                delay(HOME_REFRESH_MS)
                 refresh()
             }
         }
