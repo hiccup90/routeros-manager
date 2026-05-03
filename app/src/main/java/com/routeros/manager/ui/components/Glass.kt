@@ -55,6 +55,7 @@ import com.routeros.manager.ui.theme.DarkSurface
 import com.routeros.manager.ui.theme.DarkSurfaceElevated
 import com.routeros.manager.ui.theme.PrimaryTeal
 import com.routeros.manager.ui.theme.OnDarkSurfaceVariant
+import com.routeros.manager.ui.theme.SurfaceGlassBorder
 
 val GlassCardShape = RoundedCornerShape(16.dp)
 
