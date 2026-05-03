@@ -26,7 +26,7 @@ sealed class Screen(
 
     data object Terminal : Screen(
         route = "terminal",
-        title = "终端",
+        title = "设备",
         selectedIcon = Icons.Filled.Computer,
         unselectedIcon = Icons.Outlined.Computer
     )

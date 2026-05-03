@@ -130,8 +130,8 @@ fun HomeScreen(
 
                     item {
                         HomeSectionHeader(
-                            title = "高频接口",
-                            subtitle = if (uiState.interfaces.isEmpty()) "当前没有可展示的接口数据" else "聚焦最常用的接口状态与上下行速率"
+                            title = "网络接口",
+                            subtitle = if (uiState.interfaces.isEmpty()) "暂无接口数据" else "实时查看接口状态和上下行速率"
                         )
                     }
 

@@ -23,9 +23,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Router
 import androidx.compose.material.icons.filled.Search
@@ -68,9 +70,6 @@ import com.routeros.manager.ui.theme.SecondaryPurple
 import com.routeros.manager.ui.theme.StatusError
 import com.routeros.manager.ui.theme.StatusSuccess
 import com.routeros.manager.ui.theme.StatusWarning
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,7 +103,7 @@ fun TerminalScreen(
     GlassScaffold(
         topBar = {
             GlassTitleBar(
-                title = "终端",
+                title = "设备",
                 trailing = {
                     IconButton(onClick = viewModel::refresh) {
                         Icon(Icons.Default.Refresh, contentDescription = "刷新")
@@ -124,7 +123,10 @@ fun TerminalScreen(
                 deviceCount = uiState.devices.size,
                 query = uiState.query,
                 isRefreshing = uiState.isRefreshing,
-                lastUpdatedAt = uiState.lastUpdatedAt,
+                showOnlineOnly = uiState.showOnlineOnly,
+                onlineCount = uiState.onlineCount,
+                totalCount = uiState.totalCount,
+                onToggleOnlineOnly = { viewModel.setShowOnlineOnly(!uiState.showOnlineOnly) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -219,7 +221,10 @@ private fun SummaryCard(
     deviceCount: Int,
     query: String,
     isRefreshing: Boolean,
-    lastUpdatedAt: Long?,
+    showOnlineOnly: Boolean,
+    onlineCount: Int,
+    totalCount: Int,
+    onToggleOnlineOnly: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     GlassCard(modifier = modifier) {
@@ -258,20 +263,13 @@ private fun SummaryCard(
                     label = "设备数",
                     value = if (query.isBlank()) "$deviceCount 台" else "$deviceCount 台匹配"
                 )
-                lastUpdatedAt?.let {
-                    SummaryMetricTile(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.Refresh,
-                        tint = SecondaryPurple,
-                        label = "最近刷新",
-                        value = formatTimestamp(it)
-                    )
-                } ?: SummaryMetricTile(
+                SummaryMetricTile(
                     modifier = Modifier.weight(1f),
-                    icon = Icons.Default.Search,
-                    tint = SecondaryPurple,
-                    label = "搜索",
-                    value = if (query.isBlank()) "未筛选" else "筛选中"
+                    icon = if (showOnlineOnly) Icons.Default.CheckCircle else Icons.Default.List,
+                    tint = if (showOnlineOnly) StatusSuccess else SecondaryPurple,
+                    label = if (showOnlineOnly) "仅在线" else "全部",
+                    value = if (showOnlineOnly) "$onlineCount / $totalCount" else "$totalCount 台",
+                    onClick = onToggleOnlineOnly
                 )
             }
         }
@@ -284,10 +282,13 @@ private fun SummaryMetricTile(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     tint: androidx.compose.ui.graphics.Color,
     label: String,
-    value: String
+    value: String,
+    onClick: (() -> Unit)? = null
 ) {
     Surface(
-        modifier = modifier,
+        modifier = modifier.then(
+            if (onClick != null) Modifier.clickable { onClick() } else Modifier
+        ),
         shape = RoundedCornerShape(18.dp),
         color = tint.copy(alpha = 0.12f)
     ) {
@@ -368,8 +369,9 @@ private fun DeviceCard(
                             )
                         }
                     }
+                    val isDisplayNameIp = device.displayName == device.primaryAddress
                     Text(
-                        text = device.primaryAddress,
+                        text = if (isDisplayNameIp && device.macAddress != "--") device.macAddress else device.primaryAddress,
                         style = MaterialTheme.typography.bodySmall,
                         color = PrimaryTealLight,
                         maxLines = 1,
@@ -597,8 +599,4 @@ private fun statusColor(status: String) = when {
     status.contains("incomplete", ignoreCase = true) || status.contains("failed", ignoreCase = true) -> StatusError
     status.contains("waiting", ignoreCase = true) || status.contains("offer", ignoreCase = true) -> StatusWarning
     else -> PrimaryTeal
-}
-
-private fun formatTimestamp(timestamp: Long): String {
-    return SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(timestamp))
 }

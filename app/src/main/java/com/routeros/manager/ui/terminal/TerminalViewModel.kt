@@ -61,7 +61,9 @@ data class TerminalUiState(
     val isRefreshing: Boolean = false,
     val error: String? = null,
     val isConfigured: Boolean = true,
-    val lastUpdatedAt: Long? = null
+    val lastUpdatedAt: Long? = null,
+    val onlineCount: Int = 0,
+    val totalCount: Int = 0
 )
 
 private data class DeviceTrafficSnapshot(
@@ -110,7 +112,9 @@ class TerminalViewModel @Inject constructor(
                     isRefreshing = false,
                     isConfigured = false,
                     error = "请先在设置中配置 RouterOS 连接",
-                    lastUpdatedAt = null
+                    lastUpdatedAt = null,
+                    onlineCount = 0,
+                    totalCount = 0
                 )
             }
         }
@@ -240,7 +244,9 @@ class TerminalViewModel @Inject constructor(
                 isRefreshing = false,
                 isConfigured = true,
                 error = repository.getNetworkDevicesWarning(),
-                lastUpdatedAt = updatedAt
+                lastUpdatedAt = updatedAt,
+                onlineCount = uiModels.count { it.isOnline },
+                totalCount = uiModels.size
             )
         }
     }

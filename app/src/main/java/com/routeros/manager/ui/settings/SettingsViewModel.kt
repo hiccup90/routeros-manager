@@ -91,15 +91,14 @@ class SettingsViewModel @Inject constructor(
         }
 
         repository.updateConnection(endpoint.normalizedInput, normalizedPort, sanitizedUsername, state.password)
-        securePreferences.isConnected = false
         _uiState.value = state.copy(
             host = endpoint.normalizedInput,
             port = normalizedPort,
             username = sanitizedUsername,
-            isConnected = false,
             error = null,
-            successMessage = "连接设置已保存"
+            successMessage = null
         )
+        testConnection()
     }
 
     fun testConnection() {
