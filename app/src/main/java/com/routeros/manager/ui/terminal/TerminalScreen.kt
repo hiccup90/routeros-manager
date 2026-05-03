@@ -348,7 +348,7 @@ private fun DeviceCard(
                         verticalAlignment = Alignment.Top
                     ) {
                         Text(
-                            text = device.displayName,
+                            text = device.primaryAddress,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
                             maxLines = 1,
@@ -369,9 +369,9 @@ private fun DeviceCard(
                             )
                         }
                     }
-                    val isDisplayNameIp = device.displayName == device.primaryAddress
+                    val hasRealName = device.displayName != device.primaryAddress && device.displayName != "未知设备"
                     Text(
-                        text = if (isDisplayNameIp && device.macAddress != "--") device.macAddress else device.primaryAddress,
+                        text = if (hasRealName) device.displayName else if (device.macAddress != "--") device.macAddress else "--",
                         style = MaterialTheme.typography.bodySmall,
                         color = PrimaryTealLight,
                         maxLines = 1,
@@ -400,7 +400,7 @@ private fun DeviceCard(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 DetailLine("DHCP", device.status)
-                                DetailLine("ARP", device.macAddress)
+                                DetailLine("MAC", device.macAddress)
                                 DetailLine("IPv6", device.ipv6Display)
                                 DetailLine("接口", device.interfaceDisplay)
                             }

@@ -426,10 +426,7 @@ class TerminalViewModel @Inject constructor(
 
     private fun NetworkDevice.toUiModel(previous: TerminalDeviceUiModel?): TerminalDeviceUiModel {
         val ipv6Value = ipv6Addresses.firstOrNull().orEmpty().ifBlank { "--" }
-        val interfaceValue = buildString {
-            append(interface_.ifBlank { "--" })
-            if (interfaceType.isNotBlank()) append(" · $interfaceType")
-        }
+        val interfaceValue = interface_.ifBlank { "--" }
         val resolvedDisplayName = displayName.ifBlank {
             hostname.ifBlank {
                 inferredName.ifBlank {

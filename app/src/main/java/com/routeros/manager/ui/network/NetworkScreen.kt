@@ -16,9 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.Hub
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.SettingsEthernet
@@ -64,41 +62,26 @@ fun NetworkScreen(
 ) {
     val sections = listOf(
         NetworkSection(
-            title = "高频操作",
-            subtitle = "优先放置最常打开的入口，减少二次查找。",
-            actions = listOf(
-                NetworkQuickAction("设备网络配置", "查看 DHCP 租约与设备地址", Icons.Default.Devices, PrimaryTeal, "高频") {
-                    navController.navigate("${NetworkRoutes.DHCP_LEASES_BASE}?query=")
-                },
-                NetworkQuickAction("地址分配", "集中管理地址池、网段与分配策略", Icons.Default.Hub, SecondaryPurple, "常用") {
-                    navController.navigate(NetworkRoutes.ADDRESS_ALLOCATION)
-                },
-                NetworkQuickAction("DNS 设置", "调整解析服务器与静态记录", Icons.Default.Dns, SecondaryPurple, "常用") {
-                    navController.navigate(NetworkRoutes.DNS_SETTINGS)
-                }
-            )
-        ),
-        NetworkSection(
-            title = "地址与防火墙",
-            subtitle = "把地址、连接与策略入口集中到同一层级。",
+            title = "常用功能",
+            subtitle = "最常访问的网络配置入口。",
             actions = listOf(
                 NetworkQuickAction("IP 地址", "编辑接口地址与网络归属", Icons.Default.SettingsEthernet, PrimaryTeal, "编辑") {
                     navController.navigate(NetworkRoutes.IP_MANAGEMENT)
                 },
+                NetworkQuickAction("DNS 静态记录", "增删改、启停本地解析记录", Icons.Default.Dns, SecondaryPurple, "DNS") {
+                    navController.navigate(NetworkRoutes.DNS_RECORDS)
+                }
+            )
+        ),
+        NetworkSection(
+            title = "防火墙",
+            subtitle = "管理 IPv4 与 IPv6 的连接、规则和地址列表。",
+            actions = listOf(
                 NetworkQuickAction("IPv4 防火墙", "查看连接、规则与地址列表", Icons.Default.Security, StatusWarning, "策略") {
                     navController.navigate(NetworkRoutes.IPV4_FIREWALL_HUB)
                 },
                 NetworkQuickAction("IPv6 防火墙", "单独管理 IPv6 规则与地址对象", Icons.Default.Language, PrimaryTeal, "独立") {
                     navController.navigate(NetworkRoutes.IPV6_FIREWALL_HUB)
-                }
-            )
-        ),
-        NetworkSection(
-            title = "更多网络设置",
-            subtitle = "扩展项保持收敛，避免首页信息过载。",
-            actions = listOf(
-                NetworkQuickAction("更多网络设置", "进入 DHCP / NAT / IPv6 等扩展页面", Icons.Default.ChevronRight, SecondaryPurple, "更多") {
-                    navController.navigate(NetworkRoutes.ADVANCED_NETWORK)
                 }
             )
         )
