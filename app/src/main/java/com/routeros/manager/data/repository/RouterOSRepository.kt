@@ -184,7 +184,7 @@ class RouterOSRepository @Inject constructor(
 
     suspend fun editDhcpLease(id: String, updates: Map<String, String>): Result<DhcpLease> = runCatching {
         val result = api.editDhcpLease(id, updates)
-        val map = result.firstOrNull() ?: emptyMap()
+        val map = result.firstOrNull() ?: error("DHCP lease 更新成功但未返回结果，请重新加载确认")
         DhcpLease(
             id = map[".id"] ?: id,
             address = map["address"] ?: updates["address"] ?: "",
@@ -229,7 +229,7 @@ class RouterOSRepository @Inject constructor(
 
     suspend fun editDhcpNetwork(id: String, updates: Map<String, String>): Result<DhcpNetwork> = runCatching {
         val result = api.editDhcpNetwork(id, updates)
-        val map = result.firstOrNull() ?: emptyMap()
+        val map = result.firstOrNull() ?: error("DHCP network 更新成功但未返回结果，请重新加载确认")
         DhcpNetwork(
             id = map[".id"] ?: id,
             address = map["address"] ?: "",
@@ -242,7 +242,7 @@ class RouterOSRepository @Inject constructor(
     // ===== DNS =====
     suspend fun getIpDnsSettings(props: List<String>? = null): Result<IpDnsSettings> = runCatching {
         val request = printRequest(props = props)
-        val map = api.getIpDnsSettings(request).firstOrNull().orEmpty()
+        val map = api.getIpDnsSettings(request).firstOrNull() ?: error("DNS 设置未返回任何数据")
         IpDnsSettings(
             servers = map["servers"] ?: "",
             dynamicServers = map["dynamic-servers"] ?: "",

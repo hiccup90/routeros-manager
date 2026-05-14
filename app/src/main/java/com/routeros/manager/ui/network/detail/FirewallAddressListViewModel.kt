@@ -42,7 +42,10 @@ class FirewallAddressListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    init { if (repository.isConfigured()) loadData() }
+    init {
+        if (repository.isConfigured()) loadData()
+        else _uiState.update { it.copy(isLoading = false, error = "请先在设置中配置 RouterOS 连接") }
+    }
 
     fun loadData() {
         viewModelScope.launch {
@@ -130,15 +133,19 @@ class FirewallAddressListViewModel @Inject constructor(
 
     fun toggleEnable(id: String, currentlyDisabled: Boolean) {
         viewModelScope.launch {
-            if (currentlyDisabled) repository.enableFirewallAddressList(id) else repository.disableFirewallAddressList(id)
-            loadData()
+            val result = if (currentlyDisabled) repository.enableFirewallAddressList(id) else repository.disableFirewallAddressList(id)
+            if (result.isSuccess) loadData()
+            else _uiState.update { it.copy(error = "切换失败") }
         }
     }
 
     fun delete(id: String) {
         viewModelScope.launch {
-            repository.deleteFirewallAddressList(id)
-            loadData()
+            val result = repository.deleteFirewallAddressList(id)
+            if (result.isSuccess) loadData()
+            else _uiState.update { it.copy(error = "删除失败") }
         }
     }
+
+    fun clearError() = _uiState.update { it.copy(error = null) }
 }

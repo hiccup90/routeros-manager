@@ -7,14 +7,9 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.net.URI
-import java.security.SecureRandom
-import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 
 @Singleton
 class NetworkClient @Inject constructor(
@@ -67,21 +62,6 @@ class NetworkClient @Inject constructor(
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
 
-        try {
-            val trustManager = object : X509TrustManager {
-                override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
-                override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
-                override fun getAcceptedIssuers() = arrayOf<X509Certificate>()
-            }
-            val trustAllCerts = arrayOf<TrustManager>(trustManager)
-            val sslContext = SSLContext.getInstance("TLS")
-            sslContext.init(null, trustAllCerts, SecureRandom())
-            builder.sslSocketFactory(sslContext.socketFactory, trustManager)
-        } catch (_: Exception) {
-        }
-
-        builder.hostnameVerifier { _, _ -> true }
-
         if (username.isNotEmpty()) {
             val credentials = Credentials.basic(username, password)
             builder.addInterceptor { chain ->
@@ -94,7 +74,8 @@ class NetworkClient @Inject constructor(
         }
 
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            redactHeader("Authorization")
+            level = HttpLoggingInterceptor.Level.BASIC
         }
         builder.addInterceptor(loggingInterceptor)
 
@@ -126,7 +107,7 @@ class NetworkClient @Inject constructor(
         val candidate = if ("://" in trimmed) trimmed else "https://$trimmed"
         return runCatching {
             val uri = URI(candidate)
-            val scheme = uri.scheme?.lowercase()?.takeIf { it == "http" || it == "https" } ?: "https"
+            val scheme = "https"
             val host = uri.host?.trim().orEmpty().ifBlank {
                 trimmed.substringAfter("://", trimmed)
                     .substringBefore('/')
@@ -138,7 +119,7 @@ class NetworkClient @Inject constructor(
             EndpointConfig(scheme = scheme, host = host)
         }.getOrElse {
             EndpointConfig(
-                scheme = if (trimmed.startsWith("http://", ignoreCase = true)) "http" else "https",
+                scheme = "https",
                 host = trimmed.substringAfter("://", trimmed)
                     .substringBefore('/')
                     .substringBefore('?')

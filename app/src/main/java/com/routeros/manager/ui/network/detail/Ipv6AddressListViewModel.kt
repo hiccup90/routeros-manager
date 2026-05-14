@@ -44,7 +44,10 @@ class Ipv6AddressListViewModel @Inject constructor(
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
     private var loadJob: Job? = null
 
-    init { if (repository.isConfigured()) loadData() }
+    init {
+        if (repository.isConfigured()) loadData()
+        else _uiState.update { it.copy(isLoading = false, error = "请先在设置中配置 RouterOS 连接") }
+    }
 
     fun loadData() {
         if (loadJob?.isActive == true) return
@@ -99,10 +102,17 @@ class Ipv6AddressListViewModel @Inject constructor(
             val result = if (currentlyDisabled) repository.editIpv6Address(id, mapOf("disabled" to "false"))
             else repository.editIpv6Address(id, mapOf("disabled" to "true"))
             if (result.isSuccess) loadData()
+            else _uiState.update { it.copy(error = "切换失败") }
         }
     }
 
     fun delete(id: String) {
-        viewModelScope.launch { repository.deleteIpv6Address(id); loadData() }
+        viewModelScope.launch {
+            val result = repository.deleteIpv6Address(id)
+            if (result.isSuccess) loadData()
+            else _uiState.update { it.copy(error = "删除失败") }
+        }
     }
+
+    fun clearError() = _uiState.update { it.copy(error = null) }
 }

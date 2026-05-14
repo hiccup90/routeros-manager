@@ -44,6 +44,7 @@ class IpAddressListViewModel @Inject constructor(
 
     init {
         if (repository.isConfigured()) loadData()
+        else _uiState.update { it.copy(isLoading = false, error = "请先在设置中配置 RouterOS 连接") }
     }
 
     fun loadData() {
@@ -133,13 +134,17 @@ class IpAddressListViewModel @Inject constructor(
                 repository.editIpAddress(id, mapOf("disabled" to "true"))
             }
             if (result.isSuccess) loadData()
+            else _uiState.update { it.copy(error = "切换失败") }
         }
     }
 
     fun delete(id: String) {
         viewModelScope.launch {
-            repository.deleteIpAddress(id)
-            loadData()
+            val result = repository.deleteIpAddress(id)
+            if (result.isSuccess) loadData()
+            else _uiState.update { it.copy(error = "删除失败") }
         }
     }
+
+    fun clearError() = _uiState.update { it.copy(error = null) }
 }

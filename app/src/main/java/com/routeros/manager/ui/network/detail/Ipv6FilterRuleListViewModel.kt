@@ -41,7 +41,10 @@ class Ipv6FilterRuleListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    init { if (repository.isConfigured()) loadData() }
+    init {
+        if (repository.isConfigured()) loadData()
+        else _uiState.update { it.copy(isLoading = false, error = "请先在设置中配置 RouterOS 连接") }
+    }
 
     fun loadData() {
         viewModelScope.launch {
@@ -121,15 +124,19 @@ class Ipv6FilterRuleListViewModel @Inject constructor(
 
     fun toggleEnable(id: String, currentlyDisabled: Boolean) {
         viewModelScope.launch {
-            if (currentlyDisabled) repository.enableIpv6FirewallFilter(id) else repository.disableIpv6FirewallFilter(id)
-            loadData()
+            val result = if (currentlyDisabled) repository.enableIpv6FirewallFilter(id) else repository.disableIpv6FirewallFilter(id)
+            if (result.isSuccess) loadData()
+            else _uiState.update { it.copy(error = "切换失败") }
         }
     }
 
     fun delete(id: String) {
         viewModelScope.launch {
-            repository.deleteIpv6FirewallFilter(id)
-            loadData()
+            val result = repository.deleteIpv6FirewallFilter(id)
+            if (result.isSuccess) loadData()
+            else _uiState.update { it.copy(error = "删除失败") }
         }
     }
+
+    fun clearError() = _uiState.update { it.copy(error = null) }
 }

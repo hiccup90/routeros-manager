@@ -90,15 +90,54 @@ class SettingsViewModel @Inject constructor(
             return
         }
 
-        repository.updateConnection(endpoint.normalizedInput, normalizedPort, sanitizedUsername, state.password)
         _uiState.value = state.copy(
             host = endpoint.normalizedInput,
             port = normalizedPort,
             username = sanitizedUsername,
+            isLoading = true,
             error = null,
             successMessage = null
         )
-        testConnection()
+
+        viewModelScope.launch {
+            val result = runCatching {
+                val api = networkClient.createApi(
+                    host = endpoint.normalizedInput,
+                    port = normalizedPort,
+                    username = sanitizedUsername,
+                    password = state.password
+                )
+                val identity = api.getSystemIdentity().firstOrNull().orEmpty()
+                val resource = api.getSystemResource().firstOrNull().orEmpty()
+                identity["name"].orEmpty() to resource["version"].orEmpty()
+            }
+
+            if (result.isSuccess) {
+                val (routerName, version) = result.getOrDefault("" to "")
+                repository.updateConnection(endpoint.normalizedInput, normalizedPort, sanitizedUsername, state.password)
+                securePreferences.isConnected = true
+                securePreferences.lastConnected = System.currentTimeMillis()
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isConnected = true,
+                    error = null,
+                    successMessage = buildString {
+                        append("连接成功")
+                        if (routerName.isNotBlank()) append(" · $routerName")
+                        if (version.isNotBlank()) append(" · RouterOS $version")
+                    }
+                )
+                loadInterfaces()
+            } else {
+                securePreferences.isConnected = false
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isConnected = false,
+                    error = "连接失败，请检查地址、端口和账号密码",
+                    successMessage = null
+                )
+            }
+        }
     }
 
     fun testConnection() {
@@ -143,8 +182,6 @@ class SettingsViewModel @Inject constructor(
 
             if (result.isSuccess) {
                 val (routerName, version) = result.getOrDefault("" to "")
-                securePreferences.isConnected = true
-                securePreferences.lastConnected = System.currentTimeMillis()
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isConnected = true,
@@ -155,13 +192,11 @@ class SettingsViewModel @Inject constructor(
                         if (version.isNotBlank()) append(" · RouterOS $version")
                     }
                 )
-                loadInterfaces()
             } else {
-                securePreferences.isConnected = false
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isConnected = false,
-                    error = "连接失败: ${result.exceptionOrNull()?.message ?: "未知错误"}",
+                    error = "连接失败，请检查地址、端口和账号密码",
                     successMessage = null
                 )
             }

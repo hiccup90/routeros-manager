@@ -37,7 +37,10 @@ class Ipv6FirewallConnectionListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    init { if (repository.isConfigured()) loadData() }
+    init {
+        if (repository.isConfigured()) loadData()
+        else _uiState.update { it.copy(isLoading = false, error = "请先在设置中配置 RouterOS 连接") }
+    }
 
     fun loadData() {
         viewModelScope.launch {
@@ -57,6 +60,8 @@ class Ipv6FirewallConnectionListViewModel @Inject constructor(
             }
         }
     }
+
+    fun clearError() = _uiState.update { it.copy(error = null) }
 
     private fun buildSummary(items: List<FirewallConnection>): Summary {
         val tcp = items.count { it.protocol.equals("tcp", ignoreCase = true) }

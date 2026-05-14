@@ -27,7 +27,10 @@ class DhcpClientListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    init { if (repository.isConfigured()) loadData() }
+    init {
+        if (repository.isConfigured()) loadData()
+        else _uiState.update { it.copy(isLoading = false, error = "请先在设置中配置 RouterOS 连接") }
+    }
 
     fun loadData() {
         viewModelScope.launch {
@@ -46,8 +49,11 @@ class DhcpClientListViewModel @Inject constructor(
 
     fun toggleEnable(id: String, currentlyDisabled: Boolean) {
         viewModelScope.launch {
-            if (currentlyDisabled) repository.enableDhcpClient(id) else repository.disableDhcpClient(id)
-            loadData()
+            val result = if (currentlyDisabled) repository.enableDhcpClient(id) else repository.disableDhcpClient(id)
+            if (result.isSuccess) loadData()
+            else _uiState.update { it.copy(error = "切换失败") }
         }
     }
+
+    fun clearError() = _uiState.update { it.copy(error = null) }
 }

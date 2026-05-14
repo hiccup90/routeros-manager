@@ -181,6 +181,8 @@ class TerminalViewModel @Inject constructor(
     fun stopPolling() {
         pollingJob?.cancel()
         pollingJob = null
+        trafficPollingJobs.values.forEach { it.cancel() }
+        trafficPollingJobs.clear()
     }
 
     private suspend fun loadDevices(forceRefresh: Boolean = false) {

@@ -38,6 +38,7 @@ class DhcpNetworkListViewModel @Inject constructor(
 
     init {
         if (repository.isConfigured()) loadData()
+        else _uiState.update { it.copy(isLoading = false, error = "请先在设置中配置 RouterOS 连接") }
     }
 
     fun loadData() {
@@ -81,6 +82,8 @@ class DhcpNetworkListViewModel @Inject constructor(
             loadData()
         }
     }
+
+    fun clearError() = _uiState.update { it.copy(error = null) }
 
     private fun DhcpNetwork.toItem() = NetworkItem(
         id = id,

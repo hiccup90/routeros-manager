@@ -36,10 +36,10 @@ interface RouterOSApi {
     suspend fun addIpAddress(@Body request: Map<String, String>): List<Map<String, String>>
 
     @PATCH("/rest/ip/address/{id}")
-    suspend fun editIpAddress(@Path("id") id: String, @Body request: Map<String, String>): List<Map<String, String>>
+    suspend fun editIpAddress(@Path(value = "id", encoded = true) id: String, @Body request: Map<String, String>): List<Map<String, String>>
 
     @DELETE("/rest/ip/address/{id}")
-    suspend fun deleteIpAddress(@Path("id") id: String)
+    suspend fun deleteIpAddress(@Path(value = "id", encoded = true) id: String)
 
     // ARP
     @POST("/rest/ip/arp/print")
@@ -53,7 +53,7 @@ interface RouterOSApi {
     suspend fun makeDhcpLeaseStatic(@Body request: DhcpLeaseMakeStaticRequest)
 
     @PATCH("/rest/ip/dhcp-server/lease/{id}")
-    suspend fun editDhcpLease(@Path("id") id: String, @Body request: Map<String, String>): List<Map<String, String>>
+    suspend fun editDhcpLease(@Path(value = "id", encoded = true) id: String, @Body request: Map<String, String>): List<Map<String, String>>
 
     // DHCP Client
     @POST("/rest/ip/dhcp-client/print")
@@ -79,7 +79,7 @@ interface RouterOSApi {
     suspend fun enableDhcpServer(@Body request: IdRequest)
 
     @PATCH("/rest/ip/dhcp-server/network/{id}")
-    suspend fun editDhcpNetwork(@Path("id") id: String, @Body request: Map<String, String>): List<Map<String, String>>
+    suspend fun editDhcpNetwork(@Path(value = "id", encoded = true) id: String, @Body request: Map<String, String>): List<Map<String, String>>
 
     // DNS
     @POST("/rest/ip/dns/print")
@@ -92,10 +92,10 @@ interface RouterOSApi {
     suspend fun addDnsRecord(@Body request: Map<String, String>): List<Map<String, String>>
 
     @PATCH("/rest/ip/dns/static/{id}")
-    suspend fun editDnsRecord(@Path("id") id: String, @Body request: Map<String, String>): List<Map<String, String>>
+    suspend fun editDnsRecord(@Path(value = "id", encoded = true) id: String, @Body request: Map<String, String>): List<Map<String, String>>
 
     @DELETE("/rest/ip/dns/static/{id}")
-    suspend fun deleteDnsRecord(@Path("id") id: String)
+    suspend fun deleteDnsRecord(@Path(value = "id", encoded = true) id: String)
 
     // IPv4 防火墙 - NAT
     @POST("/rest/ip/firewall/nat/print")
@@ -111,10 +111,10 @@ interface RouterOSApi {
     suspend fun addNatRule(@Body request: Map<String, String>): List<Map<String, String>>
 
     @PATCH("/rest/ip/firewall/nat/{id}")
-    suspend fun editNatRule(@Path("id") id: String, @Body request: Map<String, String>): List<Map<String, String>>
+    suspend fun editNatRule(@Path(value = "id", encoded = true) id: String, @Body request: Map<String, String>): List<Map<String, String>>
 
     @DELETE("/rest/ip/firewall/nat/{id}")
-    suspend fun deleteNatRule(@Path("id") id: String)
+    suspend fun deleteNatRule(@Path(value = "id", encoded = true) id: String)
 
     // IPv4 防火墙 - Filter
     @POST("/rest/ip/firewall/filter/print")
@@ -130,10 +130,10 @@ interface RouterOSApi {
     suspend fun addFirewallFilter(@Body request: Map<String, String>): List<Map<String, String>>
 
     @PATCH("/rest/ip/firewall/filter/{id}")
-    suspend fun editFirewallFilter(@Path("id") id: String, @Body request: Map<String, String>): List<Map<String, String>>
+    suspend fun editFirewallFilter(@Path(value = "id", encoded = true) id: String, @Body request: Map<String, String>): List<Map<String, String>>
 
     @DELETE("/rest/ip/firewall/filter/{id}")
-    suspend fun deleteFirewallFilter(@Path("id") id: String)
+    suspend fun deleteFirewallFilter(@Path(value = "id", encoded = true) id: String)
 
     @POST("/rest/ip/firewall/address-list/print")
     suspend fun getFirewallAddressLists(@Body request: PrintRequest): List<Map<String, String>>
@@ -148,10 +148,10 @@ interface RouterOSApi {
     suspend fun addFirewallAddressList(@Body request: Map<String, String>): List<Map<String, String>>
 
     @PATCH("/rest/ip/firewall/address-list/{id}")
-    suspend fun editFirewallAddressList(@Path("id") id: String, @Body request: Map<String, String>): List<Map<String, String>>
+    suspend fun editFirewallAddressList(@Path(value = "id", encoded = true) id: String, @Body request: Map<String, String>): List<Map<String, String>>
 
     @DELETE("/rest/ip/firewall/address-list/{id}")
-    suspend fun deleteFirewallAddressList(@Path("id") id: String)
+    suspend fun deleteFirewallAddressList(@Path(value = "id", encoded = true) id: String)
 
     @POST("/rest/ip/firewall/connection/print")
     suspend fun getFirewallConnections(@Body request: PrintRequest): List<Map<String, String>>
@@ -167,10 +167,10 @@ interface RouterOSApi {
     suspend fun addIpv6Address(@Body request: Map<String, String>): List<Map<String, String>>
 
     @PATCH("/rest/ipv6/address/{id}")
-    suspend fun editIpv6Address(@Path("id") id: String, @Body request: Map<String, String>): List<Map<String, String>>
+    suspend fun editIpv6Address(@Path(value = "id", encoded = true) id: String, @Body request: Map<String, String>): List<Map<String, String>>
 
     @DELETE("/rest/ipv6/address/{id}")
-    suspend fun deleteIpv6Address(@Path("id") id: String)
+    suspend fun deleteIpv6Address(@Path(value = "id", encoded = true) id: String)
 
     // IPv6 DHCP Client
     @POST("/rest/ipv6/dhcp-client/print")
@@ -206,10 +206,10 @@ interface RouterOSApi {
     suspend fun addIpv6FirewallFilter(@Body request: Map<String, String>): List<Map<String, String>>
 
     @PATCH("/rest/ipv6/firewall/filter/{id}")
-    suspend fun editIpv6FirewallFilter(@Path("id") id: String, @Body request: Map<String, String>): List<Map<String, String>>
+    suspend fun editIpv6FirewallFilter(@Path(value = "id", encoded = true) id: String, @Body request: Map<String, String>): List<Map<String, String>>
 
     @DELETE("/rest/ipv6/firewall/filter/{id}")
-    suspend fun deleteIpv6FirewallFilter(@Path("id") id: String)
+    suspend fun deleteIpv6FirewallFilter(@Path(value = "id", encoded = true) id: String)
 
     @POST("/rest/ipv6/firewall/address-list/print")
     suspend fun getIpv6FirewallAddressLists(@Body request: PrintRequest): List<Map<String, String>>
@@ -224,10 +224,10 @@ interface RouterOSApi {
     suspend fun addIpv6FirewallAddressList(@Body request: Map<String, String>): List<Map<String, String>>
 
     @PATCH("/rest/ipv6/firewall/address-list/{id}")
-    suspend fun editIpv6FirewallAddressList(@Path("id") id: String, @Body request: Map<String, String>): List<Map<String, String>>
+    suspend fun editIpv6FirewallAddressList(@Path(value = "id", encoded = true) id: String, @Body request: Map<String, String>): List<Map<String, String>>
 
     @DELETE("/rest/ipv6/firewall/address-list/{id}")
-    suspend fun deleteIpv6FirewallAddressList(@Path("id") id: String)
+    suspend fun deleteIpv6FirewallAddressList(@Path(value = "id", encoded = true) id: String)
 
     @POST("/rest/ipv6/firewall/connection/print")
     suspend fun getIpv6FirewallConnections(@Body request: PrintRequest): List<Map<String, String>>

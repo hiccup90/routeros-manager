@@ -52,7 +52,10 @@ class DhcpLeaseListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    init { if (repository.isConfigured()) loadData() }
+    init {
+        if (repository.isConfigured()) loadData()
+        else _uiState.update { it.copy(isLoading = false, error = "请先在设置中配置 RouterOS 连接") }
+    }
 
     fun loadData() {
         viewModelScope.launch {
@@ -149,7 +152,7 @@ class DhcpLeaseListViewModel @Inject constructor(
                 }
                 val editNetworkResult = repository.editDhcpNetwork(networkId, networkUpdates)
                 if (editNetworkResult.isFailure) {
-                    _uiState.update { it.copy(error = "DHCP 网络参数保存失败") }
+                    _uiState.update { it.copy(error = "静态绑定已保存，但 DHCP 网络参数保存失败") }
                     return@launch
                 }
             }
@@ -185,6 +188,8 @@ class DhcpLeaseListViewModel @Inject constructor(
             }
         }
     }
+
+    fun clearError() = _uiState.update { it.copy(error = null) }
 
     private fun filterItems(items: List<LeaseItem>, query: String): List<LeaseItem> {
         val keyword = query.trim().lowercase()
